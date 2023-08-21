@@ -1,0 +1,11 @@
+{
+    "name": "@language-tutor/web",
+    "scripts": {
+        "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'"
+    },
+    "main": "src/index.ts",
+    "types": "src/index.ts",
+    "devDependencies": {
+        "typescript": "^4.5.0"
+    }
+}
