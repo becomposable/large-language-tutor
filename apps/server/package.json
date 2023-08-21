@@ -1,11 +1,29 @@
 {
     "name": "@language-tutor/server",
     "scripts": {
-        "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'"
+        "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'",
+        "dist": "rimraf ./lib && tsc",
+        "build": "rimraf ./lib && tsc --incremental",
+        "dev": "tsup src/main.ts --format cjs --watch --onSuccess \"node lib/main.js\"",
+        "prestart": "npm run dist",
+        "start": "node lib/main.js",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
     },
-    "main": "src/index.ts",
-    "types": "src/index.ts",
+    "type": "module",
+    "main": "lib/main.js",
     "devDependencies": {
-        "typescript": "^4.5.0"
+        "@types/koa": "^2.13.8",
+        "@types/koa__cors": "^4.0.0",
+        "@types/koa-compress": "^4.0.3",
+        "rimraf": "^5.0.1",
+        "typescript": "^5.0.2"
+    },
+    "dependencies": {
+        "@koa-stack/server": "^0.6.6",
+        "@koa/cors": "^4.0.0",
+        "better-sse": "^0.9.0",
+        "dotenv": "^16.3.1",
+        "koa-compress": "^5.1.1",
+        "openai": "^4.0.1"
     }
 }
