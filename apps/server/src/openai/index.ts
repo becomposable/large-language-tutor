@@ -9,6 +9,9 @@ export const openai = new OpenAI({
 });
 
 export function requestChatCompletion(messages: OpenAI.Chat.ChatCompletionMessage[], stream = false) {
+
+    console.log(messages, "Requestion chat completion")
+
     return openai.chat.completions.create({
         stream: stream,
         model: "gpt-4",
@@ -19,26 +22,12 @@ export function requestChatCompletion(messages: OpenAI.Chat.ChatCompletionMessag
     });
 }
 
-export function requestCompletion(prompt: string, stream = false) {
-
-    return openai.completions.create({
-        stream: stream,
-        model: 'text-davinci-003',
-        prompt: prompt,
-        temperature: 0.5,
-        n: 1,
-        max_tokens: 2048,
-        stop: ['\n']
-    });
-
-}
-
 /** Abstract class defining the base methods of a prompt
  * Implement and extend this class to create Prompt that can be used to
  * Generate Prompts for use case and LLMs.
  * Type properly the constructor to force passing the right arguments
  */
-abstract class Prompt<T extends Prompt<T>> {
+export abstract class Prompt<T extends Prompt<T>> {
 
     studyLanguage: string;
     userLanguage: string;
@@ -52,6 +41,14 @@ abstract class Prompt<T extends Prompt<T>> {
         this.conversation = conversation;
         this.studyLanguage = conversation.study_language;
         this.userLanguage = conversation.user_language;
+    }
+
+    abstract buildMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[]>;
+
+    async execute(): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+        const messages = await this.buildMessages();
+        const result = await requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
+        return result;
     }
 
 }
@@ -110,39 +107,4 @@ export class ChatCompletion extends Prompt<ChatCompletion> {
         return requestChatCompletion(messages, true) as Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>>;
     }
 
-}
-
-export class ExplainCompletion extends Prompt<ExplainCompletion> {
-
-    content: string
-
-    constructor(conversation: IConversation, content: string) {
-        super(conversation);
-        this.content = content;
-    }
-
-    getPrompt(): string {
-        const msg = `
-        You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
-        Please answer in ${this.userLanguage}. 
-        Reply with a translation, an explanation of the structure of the sentence if it's a sentence or a definition of the word if it's a word.
-        Please use simple words and short sentences.
-        Reply using the format below:
-        ---
-        Content: content to be explained
-        Translation: translation of the content in ${this.userLanguage}
-        Explanation: 
-        ---
-
-        Taking account the previous, please explain the following between the %%% symbols:
-        %%%${this.content}%%%
-        `;
-        return msg;
-    }
-
-    async execute(): Promise<string> {
-        const prompt = this.getPrompt();
-        const result = await requestCompletion(prompt, false) as OpenAI.Completions.Completion;
-        return result.choices[0].text;
-    }
 }

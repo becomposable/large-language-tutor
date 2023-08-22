@@ -3,6 +3,7 @@ import { Context } from "koa";
 import env from "../env.js";
 import ConversationsResource from "./conversations.js";
 import { MessagesResource } from "./messages.js";
+import { ExplainResource } from "./explain.js";
 
 //TODO put in a shared project
 export interface IUserPayload {
@@ -89,6 +90,7 @@ export default class ApiRoot extends Resource {
         //router.use('/users', Users);
         router.mount('/conversations', ConversationsResource);
         router.mount('/messages', MessagesResource);
+        router.mount('/explain', ExplainResource);
     }
 
 

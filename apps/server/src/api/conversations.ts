@@ -35,6 +35,7 @@ class ConversationResource extends Resource {
 }
 
 export default class ConversationsResource extends Resource {
+    
     /**
      * List conversations for the authenticated user
      */
@@ -46,6 +47,9 @@ export default class ConversationsResource extends Resource {
         ctx.body = jsonDocs(conversations);
     }
 
+    /**
+     * Create a new conversation
+     */
     @post('/')
     async createConversation(ctx: Context) {
         const payload = (await ctx.payload).json;

@@ -67,7 +67,6 @@ export class MessagesResource extends Resource {
             return; // we are done, the client will stream the completion
         }     
 
-
         //not streaming - ask right now for a completion
         const chatRequest = new ChatCompletion(conversation);
         const result = await chatRequest.execute();
