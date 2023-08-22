@@ -39,8 +39,7 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
                     content: question
                 }
             }).then(r => {
-                console.log('Answer>>>', r.content);
-                setData([...messages!, r]);
+                setData([...messages!, ...r]);
             }).catch(err => {
                 toast({
                     status: 'error',

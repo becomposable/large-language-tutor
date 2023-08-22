@@ -5,7 +5,7 @@ import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
 import { MessageModel, MessageOrigin } from "../models/message.js";
 import { ChatCompletion } from "../openai/index.js";
-import { jsonDoc } from "./utils.js";
+import { jsonDoc, jsonDocs } from "./utils.js";
 
 
 export class MessagesResource extends Resource {
@@ -43,7 +43,6 @@ export class MessagesResource extends Resource {
         });
 
         ctx.status = 200;
-
     }
 
 
@@ -65,8 +64,8 @@ export class MessagesResource extends Resource {
 
 
         if (payload.stream) {
-            // ctx.body = jsonDoc(message);
-            // ctx.status = 201;
+            ctx.body = jsonDoc(message);
+            ctx.status = 201;
             return; // we are done, the client will stream the completion
         }
 
@@ -82,9 +81,8 @@ export class MessagesResource extends Resource {
             in_reply_to: message._id,
         });
 
-        ctx.body = jsonDoc(newMsg);
+        ctx.body = jsonDocs([message, newMsg]);
         ctx.status = 201;
-
     }
 
 }
