@@ -2,6 +2,7 @@ import { Resource, Router, get, post } from "@koa-stack/server";
 import { Context } from "koa";
 import { ConversationModel } from "../models/conversation.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
+import { MessageModel } from "../models/message.js";
 
 class ConversationResource extends Resource {
     @get('/')
@@ -28,14 +29,14 @@ class ConversationResource extends Resource {
         }
 
         //TODO for now we list all conversations since we don't have authentication yet
-        const messages = await ConversationModel.find({}).sort({ created: -1 }).limit(tail);
+        const messages = await MessageModel.find({}).sort({ created: -1 }).limit(tail);
         ctx.body = jsonDocs(messages);
     }
 
 }
 
 export default class ConversationsResource extends Resource {
-    
+
     /**
      * List conversations for the authenticated user
      */

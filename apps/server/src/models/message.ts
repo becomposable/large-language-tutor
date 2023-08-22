@@ -36,13 +36,13 @@ MessageSchema.virtual('id').get(function (this: mongoose.Document) {
 
 export type MessageDocument = mongoose.Document<ObjectIdType, any, IMessage> & IMessage;
 
-export const Message = mongoose.model<MessageDocument>('Message', MessageSchema);
+export const MessageModel = mongoose.model<MessageDocument>('Message', MessageSchema);
 
 
 
 export function findPreviousMessages(conversationId: ObjectIdType, limit?: number, last?: IMessage): Promise<IMessage[]> {
 
-    const agg = Message.aggregate().match({
+    const agg = MessageModel.aggregate().match({
         conversation: conversationId,
     })
 
