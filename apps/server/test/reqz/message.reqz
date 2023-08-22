@@ -1,0 +1,9 @@
+var message, cid
+
+POST http://localhost:8089/api/v1/messages
+Content-Type: application/json
+
+{
+    conversation: cid,
+    content: message
+}

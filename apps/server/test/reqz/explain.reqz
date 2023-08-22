@@ -1,0 +1,8 @@
+var message
+
+POST http://localhost:8089/api/v1/explain
+Content-Type: application/json
+
+{
+    "message": message,
+}

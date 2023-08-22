@@ -1,11 +1,11 @@
 import { Resource, get, post } from "@koa-stack/server";
-import { MessageModel } from "../models/message.js";
-import { ConversationModel, IConversation } from "../models/conversation.js";
-import ServerError from "../errors/ServerError.js";
-import { ChatCompletion } from "../openai/index.js";
-import { Context } from "koa";
-import { jsonDoc } from "./utils.js";
 import SSE from "better-sse";
+import { Context } from "koa";
+import ServerError from "../errors/ServerError.js";
+import { ConversationModel, IConversation } from "../models/conversation.js";
+import { Message, MessageOrigin } from "../models/message.js";
+import { ChatCompletion } from "../openai/index.js";
+import { jsonDoc } from "./utils.js";
 
 
 export class MessagesResource extends Resource {
@@ -13,7 +13,7 @@ export class MessagesResource extends Resource {
     @get('/sse/:messageId')
     async streamMessageCompletion(ctx: Context) {
         const msgId = ctx.params.messageId;
-        const msg = await MessageModel.findById(msgId).populate<{
+        const msg = await Message.findById(msgId).populate<{
             conversation: IConversation,
         }>('conversation');
 
@@ -27,16 +27,21 @@ export class MessagesResource extends Resource {
         }
 
         const chatRequest = new ChatCompletion(msg.conversation);
-        const stream = await chatRequest.stream(msg, 20);
+        const stream = await chatRequest.stream(50);
         const chunks = [];
         for await (const data of stream) {
             const chunk = data.choices[0]?.delta?.content ?? '';
             session.push(chunk);
             chunks.push(chunk);
         }
-        msg.answer = chunks.join('');
-        msg.answered = new Date();
-        msg.save();
+
+        await Message.create({
+            conversation: msg.conversation._id,
+            content: chunks.join(''),
+            origin: MessageOrigin.assistant,
+            in_reply_to: msg._id,
+        });
+        
     }
 
 
@@ -49,21 +54,35 @@ export class MessagesResource extends Resource {
             throw new ServerError(`Conversation with id ${payload.conversation} not found`, 404);
         }
 
-        const message = await MessageModel.create({
+        const message = await Message.create({
             conversation: conversation._id,
-            question: payload.content,
+            content: payload.content,
+            origin: MessageOrigin.user,
+        });
+       
+
+        if (payload.stream) {
+            ctx.body = jsonDoc(message);
+            ctx.status = 201;
+            return; // we are done, the client will stream the completion
+        }     
+
+
+        //not streaming - ask right now for a completion
+        const chatRequest = new ChatCompletion(conversation);
+        const result = await chatRequest.execute();
+        const content = result.choices[0].message.content || '';
+
+        const newMsg = await Message.create({
+            conversation: conversation._id,
+            content: content,
+            origin: MessageOrigin.assistant,
+            in_reply_to: message._id,
         });
 
-        if (!payload.stream) {
-            // ask right now for a response            
-            const chatRequest = new ChatCompletion(conversation);
-            const result = await chatRequest.execute(message, 20);
-            message.answer = result.choices[0].message.content || '';
-            message.answered = new Date(result.created);
-            await message.save();
-        }
-
-        ctx.body = jsonDoc(message);
+        ctx.body = jsonDoc(newMsg);
+        ctx.status = 201;
+        
     }
 
 }

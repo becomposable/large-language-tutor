@@ -1,7 +1,0 @@
-
-POST http://localhost:8089/api/v1/prompt
-Content-Type: application/json
-
-{
-    "prompt": "Say hello!",
-}

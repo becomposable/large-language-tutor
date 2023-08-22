@@ -1,0 +1,9 @@
+var study_language?, user_language?
+
+POST http://localhost:8089/api/v1/conversations
+Content-Type: application/json
+
+{
+    "study_language": study_language ?? "Japanese",
+    "user_language": user_language ?? "English",
+}

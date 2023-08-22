@@ -1,4 +1,4 @@
-import { Resource, Router, get } from "@koa-stack/server";
+import { Resource, Router, get, post } from "@koa-stack/server";
 import { Context } from "koa";
 import { ConversationModel } from "../models/conversation.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
@@ -13,6 +13,8 @@ class ConversationResource extends Resource {
         }
         ctx.body = jsonDoc(result);
     }
+
+
 
     @get('/messages')
     async getMessages(ctx: Context) {
@@ -44,6 +46,21 @@ export default class ConversationsResource extends Resource {
         ctx.body = jsonDocs(conversations);
     }
 
+    @post('/')
+    async createConversation(ctx: Context) {
+        const payload = (await ctx.payload).json;
+
+        const study_language = payload.study_language ?? 'Japanese';
+        const user_language = payload.user_language ?? 'English';
+
+        const conversation = await ConversationModel.create({
+            study_language: study_language,
+            user_language: user_language,
+        });
+
+        ctx.body = jsonDoc(conversation);
+        ctx.status = 201;
+    }
 
     setup(router: Router): void {
         super.setup(router);

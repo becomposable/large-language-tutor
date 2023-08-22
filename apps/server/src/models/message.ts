@@ -5,23 +5,27 @@ import { IConversation } from './conversation.js';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
+export enum MessageOrigin {
+    user = 'user',
+    assistant = 'assistant',
+    system = 'system',
+}
+
 export interface IMessage {
     readonly id: string,
     readonly _id: ObjectIdType,
     conversation: string | ObjectIdType | IConversation,
     created: Date,
-    question: string,
-    answer: string,
-    answered: Date | string,
-    explanation?: string, // TODO explanation object id or inline?
+    content: string,
+    origin: MessageOrigin,
+    in_reply_to?: string | ObjectIdType,
 }
 
 export const MessageSchema = new mongoose.Schema<IMessage>({
     conversation: { type: ObjectId, ref: 'Conversation', required: true, index: true },
-    question: { type: String, required: true },
-    answer: String,
-    answered: Date,
-    explanation: String //TODO
+    origin: { type: String, enum: Object.values(MessageOrigin), required: true },
+    in_reply_to: { type: ObjectId, ref: 'Message', required: false, index: true },
+    content: String,
 }, {
     timestamps: { createdAt: 'created' }
 });
@@ -32,13 +36,22 @@ MessageSchema.virtual('id').get(function (this: mongoose.Document) {
 
 export type MessageDocument = mongoose.Document<ObjectIdType, any, IMessage> & IMessage;
 
-export const MessageModel = mongoose.model<MessageDocument>('Message', MessageSchema);
+export const Message = mongoose.model<MessageDocument>('Message', MessageSchema);
 
 
-export function findPreviousMessages(last: IMessage, limit: number): Promise<IMessage[]> {
-    const convId = typeof last.conversation === 'string' ? new mongoose.Types.ObjectId(last.conversation) : last.conversation;
-    return MessageModel.aggregate().match({
-        conversation: convId,
-        created: { $lt: last.created }
-    }).sort({ created: -1 }).limit(limit);
+
+export function findPreviousMessages(conversationId: ObjectIdType, limit?: number, last?: IMessage): Promise<IMessage[]> {
+
+    const agg = Message.aggregate().match({
+        conversation: conversationId,
+    })
+
+    if (last) {
+        agg.match({
+            created: { $lt: last.created },
+        })
+    }
+
+    return agg.sort({ created: -1 }).limit(limit ?? 50);
+
 }

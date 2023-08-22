@@ -7,15 +7,17 @@ const ObjectId = Schema.Types.ObjectId;
 export interface IConversation {
     readonly id: string,
     readonly _id: ObjectIdType,
-    studyLanguage: string, // language code
-    userLanguage: string, // language code
+    study_language: string, // language code
+    user_language: string, // language code
+    waiting_for_completion: boolean,
     user?: string | ObjectIdType; //the user id
     created: Date,
 }
 
 export const ConversationSchema = new mongoose.Schema<IConversation>({
-    studyLanguage: { type: String, required: false },
-    userLanguage: { type: String, required: false },
+    waiting_for_completion: { type: Boolean, required: true, default: false },
+    study_language: { type: String, required: true },
+    user_language: { type: String, required: true },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
 }, {
     timestamps: { createdAt: 'created' }
