@@ -1,4 +1,6 @@
 import OpenAI from 'openai';
+import logger from '../logger.js';
+import { findPreviousMessages } from '../models/message.js';
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
 });
@@ -29,7 +31,7 @@ export function requestCompletion(prompt, stream = false) {
  * Type properly the constructor to force passing the right arguments
  */
 class Prompt {
-    constructor(studyLanguage, userLanguage) {
+    constructor(conversation) {
         Object.defineProperty(this, "studyLanguage", {
             enumerable: true,
             configurable: true,
@@ -48,6 +50,7 @@ class Prompt {
             writable: true,
             value: void 0
         });
+        //TODO the conversation has a user reference sop we can fetch the user info with a populate
         Object.defineProperty(this, "userAge", {
             enumerable: true,
             configurable: true,
@@ -60,53 +63,68 @@ class Prompt {
             writable: true,
             value: void 0
         });
-        this.studyLanguage = studyLanguage;
-        this.userLanguage = userLanguage;
-    }
-}
-export class ChatCompletion extends Prompt {
-    constructor(studyLanguage, userLanguage, messages) {
-        super(studyLanguage, userLanguage);
-        Object.defineProperty(this, "messages", {
+        Object.defineProperty(this, "conversation", {
             enumerable: true,
             configurable: true,
             writable: true,
             value: void 0
         });
-        this.messages = messages;
+        this.conversation = conversation;
+        this.studyLanguage = conversation.studyLanguage;
+        this.userLanguage = conversation.userLanguage;
+    }
+}
+export class ChatCompletion extends Prompt {
+    constructor(conversation) {
+        super(conversation);
         this.userLevel = "JPLT4";
     }
-    getMessages() {
-        let msg = `
+    async buildMessages(newMessage, limit = 20) {
+        let sysMsg = `
         You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         You are chatting with this user to help him/her practice and learn ${this.studyLanguage}.
         Always make sure your messages are engaging and helpful.
         `;
         if (this.userLevel) {
-            msg = msg + `The user is at level ${this.userLevel} in ${this.studyLanguage}. Please only use words and structure that should be accessible for this level in the language.`;
+            sysMsg = sysMsg + `The user is at level ${this.userLevel} in ${this.studyLanguage}. Please only use words and structure that should be accessible for this level in the language.`;
         }
         if (this.userAge) {
-            msg = msg + `The user is ${this.userAge} years old. Please use a language appropriate for that age and make sure topics are relevant.`;
+            sysMsg = sysMsg + `The user is ${this.userAge} years old. Please use a language appropriate for that age and make sure topics are relevant.`;
         }
         if (this.userInterests) {
-            msg = msg + `The user is interested in ${this.userInterests.join(",")}. Please use a language appropriate for that age and make sure topics are relevant.`;
+            sysMsg = sysMsg + `The user is interested in ${this.userInterests.join(",")}. Please use a language appropriate for that age and make sure topics are relevant.`;
         }
-        const sysMessage = {
+        const latestMessages = await findPreviousMessages(newMessage, limit);
+        const messages = [];
+        messages.push({
             role: "system",
-            content: msg,
-        };
-        return [sysMessage, ...this.messages];
+            content: sysMsg,
+        });
+        for (let i = latestMessages.length - 1; i >= 0; i--) {
+            const m = latestMessages[i];
+            messages.push({ role: "user", content: m.question });
+            messages.push({ role: "assistant", content: m.answer || null });
+        }
+        messages.push({
+            role: "user",
+            content: newMessage.question,
+        });
+        return messages;
     }
-    async execute() {
-        const messages = this.getMessages();
-        console.log(messages, "Executing a new chat Request");
-        const result = await requestChatCompletion(messages, false);
-        return result;
+    async execute(newMessage, limit = 20) {
+        const messages = await this.buildMessages(newMessage, limit);
+        logger.log(messages, "Executing a new chat Request");
+        return await requestChatCompletion(messages, false);
+    }
+    async stream(newMessage, limit = 20) {
+        const messages = await this.buildMessages(newMessage, limit);
+        logger.log(messages, "Executing a new chat Request in stream mode");
+        return requestChatCompletion(messages, true);
     }
 }
 export class ExplainCompletion extends Prompt {
-    constructor(studyLanguage, userLanguage, content) {
-        super(studyLanguage, userLanguage);
+    constructor(conversation, content) {
+        super(conversation);
         Object.defineProperty(this, "content", {
             enumerable: true,
             configurable: true,

@@ -1,5 +1,8 @@
 import OpenAI from 'openai';
-
+import { Stream } from 'openai/streaming';
+import logger from '../logger.js';
+import { IConversation } from '../models/conversation.js';
+import { IMessage, findPreviousMessages } from '../models/message.js';
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
@@ -13,7 +16,6 @@ export function requestChatCompletion(messages: OpenAI.Chat.ChatCompletionMessag
         temperature: 0.5,
         n: 1,
         max_tokens: 2048,
-
     });
 }
 
@@ -37,65 +39,79 @@ export function requestCompletion(prompt: string, stream = false) {
  * Type properly the constructor to force passing the right arguments
  */
 abstract class Prompt<T extends Prompt<T>> {
-    
+
     studyLanguage: string;
     userLanguage: string;
     userInterests?: string[];
+    //TODO the conversation has a user reference sop we can fetch the user info with a populate
     userAge?: number;
     userLevel?: string;
+    conversation: IConversation;
 
-    constructor(studyLanguage: string, userLanguage: string) {
-        this.studyLanguage = studyLanguage;
-        this.userLanguage = userLanguage;
+    constructor(conversation: IConversation) {
+        this.conversation = conversation;
+        this.studyLanguage = conversation.studyLanguage;
+        this.userLanguage = conversation.userLanguage;
     }
 
 }
 
 export class ChatCompletion extends Prompt<ChatCompletion> {
 
-    messages: OpenAI.Chat.ChatCompletionMessage[]
-
-    constructor(studyLanguage: string, userLanguage: string, messages: OpenAI.Chat.ChatCompletionMessage[]) {
-        super(studyLanguage, userLanguage);
-        this.messages = messages;
-        this.userLevel = "JPLT4";               
+    constructor(conversation: IConversation) {
+        super(conversation);
+        this.userLevel = "JPLT4";
 
     }
 
-    getMessages(): OpenAI.Chat.ChatCompletionMessage[] {
-        let msg = `
+    async buildMessages(newMessage: IMessage, limit = 20): Promise<OpenAI.Chat.ChatCompletionMessage[]> {
+        let sysMsg = `
         You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         You are chatting with this user to help him/her practice and learn ${this.studyLanguage}.
         Always make sure your messages are engaging and helpful.
         `;
 
         if (this.userLevel) {
-            msg = msg + `The user is at level ${this.userLevel} in ${this.studyLanguage}. Please only use words and structure that should be accessible for this level in the language.`;
+            sysMsg = sysMsg + `The user is at level ${this.userLevel} in ${this.studyLanguage}. Please only use words and structure that should be accessible for this level in the language.`;
         }
 
         if (this.userAge) {
-            msg = msg + `The user is ${this.userAge} years old. Please use a language appropriate for that age and make sure topics are relevant.`;
+            sysMsg = sysMsg + `The user is ${this.userAge} years old. Please use a language appropriate for that age and make sure topics are relevant.`;
         }
 
         if (this.userInterests) {
-            msg = msg + `The user is interested in ${this.userInterests.join(",")}. Please use a language appropriate for that age and make sure topics are relevant.`;
+            sysMsg = sysMsg + `The user is interested in ${this.userInterests.join(",")}. Please use a language appropriate for that age and make sure topics are relevant.`;
         }
 
-        const sysMessage: OpenAI.Chat.ChatCompletionMessage = {
+        const latestMessages = await findPreviousMessages(newMessage, limit);
+        const messages: OpenAI.Chat.ChatCompletionMessage[] = [];
+        messages.push({
             role: "system",
-            content: msg,
+            content: sysMsg,
+        })
+        for (let i = latestMessages.length - 1; i >= 0; i--) {
+            const m = latestMessages[i];
+            messages.push({ role: "user", content: m.question });
+            messages.push({ role: "assistant", content: m.answer || null });
         }
+        messages.push({
+            role: "user",
+            content: newMessage.question,
+        })
 
-        return [sysMessage, ...this.messages];
-
+        return messages;
     }
 
-    async execute(): Promise<OpenAI.Chat.Completions.ChatCompletion> {
-        const messages = this.getMessages();
-        console.log(messages, "Executing a new chat Request");
+    async execute(newMessage: IMessage, limit = 20): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+        const messages = await this.buildMessages(newMessage, limit);
+        logger.log(messages, "Executing a new chat Request");
+        return await requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
+    }
 
-        const result = await requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
-        return result
+    async stream(newMessage: IMessage, limit = 20): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
+        const messages = await this.buildMessages(newMessage, limit);
+        logger.log(messages, "Executing a new chat Request in stream mode");
+        return requestChatCompletion(messages, true) as Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>>;
     }
 
 }
@@ -104,8 +120,8 @@ export class ExplainCompletion extends Prompt<ExplainCompletion> {
 
     content: string
 
-    constructor(studyLanguage: string, userLanguage: string, content: string) {
-        super(studyLanguage, userLanguage);
+    constructor(conversation: IConversation, content: string) {
+        super(conversation);
         this.content = content;
     }
 

@@ -7,13 +7,15 @@ const ObjectId = Schema.Types.ObjectId;
 export interface IConversation {
     readonly id: string,
     readonly _id: ObjectIdType,
-    language: string, // language code
+    studyLanguage: string, // language code
+    userLanguage: string, // language code
     user?: string | ObjectIdType; //the user id
     created: Date,
 }
 
 export const ConversationSchema = new mongoose.Schema<IConversation>({
-    language: { type: String, required: false },
+    studyLanguage: { type: String, required: false },
+    userLanguage: { type: String, required: false },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
 }, {
     timestamps: { createdAt: 'created' }

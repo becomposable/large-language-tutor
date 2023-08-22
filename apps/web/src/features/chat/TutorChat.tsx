@@ -1,7 +1,7 @@
-import { Box, TextField } from "@radix-ui/themes";
 import { KeyboardEvent, useRef } from "react";
 import { API_BASE_URL } from "../../env";
 import FetchClient from "../../fetch-client";
+import { Box, FormControl, Input } from "@chakra-ui/react";
 
 interface TutorChatProps {
 
@@ -37,8 +37,11 @@ export default function TutorChat({ }: TutorChatProps) {
     // }, []);
 
     return (
-        <Box className='chat-panel'>
-            <Box className='chat-output' ref={outputRef}></Box>
+        <Box>
+            <Box></Box>
+            <FormControl>
+                <Input placeholder="Type a question" />
+            </FormControl>
             <TextField.Input onKeyUp={onAsk} placeholder="Type a question" />
         </Box>
     )
