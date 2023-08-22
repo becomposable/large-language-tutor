@@ -30,7 +30,7 @@ class ConversationResource extends Resource {
 
         //TODO for now we list all conversations since we don't have authentication yet
         const messages = await MessageModel.find({}).sort({ created: -1 }).limit(tail);
-        ctx.body = jsonDocs(messages);
+        ctx.body = jsonDocs(messages.reverse());
     }
 
 }
