@@ -121,6 +121,7 @@ class ExplainCompletion extends Prompt<ExplainCompletion> {
             If the content has mistake, please correct it and explain the mistake.
             Please use simple words and short sentences.
             Finish with an advice on how to use or how to answer to the content.
+            When quoting ${this.studyLanguage} please use {{}}.
             `
         };
 
