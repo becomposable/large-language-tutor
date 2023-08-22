@@ -1,7 +1,7 @@
 import { Resource, get, post } from "@koa-stack/server";
 import { Context } from "koa";
 import OpenAI from "openai";
-import { env } from "../env.js";
+import env from "../env.js";
 import { ChatCompletion, ExplainCompletion } from "../openai/index.js";
 
 //TODO put in a shared project
@@ -15,7 +15,7 @@ export interface IChatPayload extends IUserPayload {
     message: string | string[];
 }
 
-export interface IExplainPayload extends IUserPayload{
+export interface IExplainPayload extends IUserPayload {
     content: string;
 }
 

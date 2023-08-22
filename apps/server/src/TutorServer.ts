@@ -2,16 +2,17 @@ import { KoaServer } from "@koa-stack/server";
 import compress from "koa-compress";
 import ApiRoot from "./api/index.js";
 import cors from '@koa/cors';
+import Database from "./database.js";
 
 export default class TutorServer extends KoaServer {
 
-    //db: Database;
+    db: Database;
 
     constructor() {
         super();
         // this.koa.proxy = Config.net.proxy;
         // this.koa.keys = [Config.auth.sessionSecretKey];
-        //this.db = new Database();
+        this.db = new Database();
         //TODO rename to pathParams
         Object.defineProperty(this.koa.context, 'params', {
             get() { return this.$router.params; }
@@ -60,10 +61,10 @@ export default class TutorServer extends KoaServer {
     }
 
     async onStart() {
-        //await this.db.start();
+        await this.db.start();
     }
 
     async onStop() {
-        //await this.db.stop();
+        await this.db.stop();
     }
 }
