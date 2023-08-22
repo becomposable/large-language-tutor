@@ -41,8 +41,11 @@ export class MessagesResource extends Resource {
             origin: MessageOrigin.assistant,
             in_reply_to: msg._id,
         });
+
+        ctx.status = 200;
         
     }
+
 
 
     @post('/')

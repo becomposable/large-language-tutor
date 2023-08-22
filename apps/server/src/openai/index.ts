@@ -43,12 +43,20 @@ export abstract class Prompt<T extends Prompt<T>> {
         this.userLanguage = conversation.user_language;
     }
 
-    abstract buildMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[]>;
+    abstract buildMessages(limit?: number): Promise<OpenAI.Chat.ChatCompletionMessage[]>;
 
     async execute(): Promise<OpenAI.Chat.Completions.ChatCompletion> {
         const messages = await this.buildMessages();
+        logger.log(messages, "Executing a new chat Request");
         const result = await requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
+        logger.log(result, "Chat Request result");
         return result;
+    }
+
+    async stream(limit = 50): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
+        const messages = await this.buildMessages(limit);
+        logger.log(messages, "Executing a new chat Request in stream mode");
+        return requestChatCompletion(messages, true) as Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>>;
     }
 
 }
@@ -93,18 +101,6 @@ export class ChatCompletion extends Prompt<ChatCompletion> {
         }
 
         return messages;
-    }
-
-    async execute(limit = 50): Promise<OpenAI.Chat.Completions.ChatCompletion> {
-        const messages = await this.buildMessages(limit);
-        logger.log(messages, "Executing a new chat Request");
-        return await requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
-    }
-
-    async stream(limit = 50): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
-        const messages = await this.buildMessages(limit);
-        logger.log(messages, "Executing a new chat Request in stream mode");
-        return requestChatCompletion(messages, true) as Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>>;
     }
 
 }
