@@ -1,12 +1,49 @@
-import { Resource, post } from "@koa-stack/server";
+import { Resource, get, post } from "@koa-stack/server";
+import SSE from "better-sse";
 import { Context } from "koa";
+import OpenAI from "openai";
 import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
+import { Explanation } from "../models/explanation.js";
 import { Prompt } from "../openai/index.js";
-import OpenAI from "openai";
 
 
 export class ExplainResource extends Resource {
+
+
+    @get('/stream/:explanationId')
+    async streamMessageCompletion(ctx: Context) {
+        const explanationId = ctx.params.explanationId;
+        const expl = await Explanation.findById(explanationId).populate<{
+            conversation: IConversation,
+        }>('conversation');
+
+        if (!expl) {
+            ctx.throw(404, `Message with id ${explanationId} not found`);
+        }
+
+        const session = await SSE.createSession(ctx.req, ctx.res);
+        if (!session.isConnected) {
+            throw new ServerError('SSE session not connected', 500);
+        }
+
+        const explRequest = new ExplainCompletion(expl.conversation, expl.topic, expl.message?.toString());
+        const stream = await explRequest.stream(50);
+        const chunks = [];
+        for await (const data of stream) {
+            const chunk = data.choices[0]?.delta?.content ?? '';
+            session.push(chunk);
+            chunks.push(chunk);
+        }
+
+        expl.content = chunks.join('');
+        await expl.save();
+
+        ctx.status = 200;
+
+    }
+
+
 
     @post('/')
     async explain(ctx: Context) {
@@ -21,6 +58,18 @@ export class ExplainResource extends Resource {
         const conversation = await ConversationModel.findById(payload.conversation);
         if (!conversation) {
             throw new ServerError(`Conversation with id ${payload.conversation} not found`, 404);
+        }
+
+        const explanation = await Explanation.create({
+            topic: content,
+            conversation: conversation,
+            message: messageId,
+            user: conversation.user,
+        });
+
+        if (payload.stream) {
+            ctx.body = explanation;
+            ctx.status = 201;
         }
 
         //not streaming, get the thing
@@ -57,8 +106,9 @@ class ExplainCompletion extends Prompt<ExplainCompletion> {
             Please use simple words and short sentences.
             Answer with the following template:
             ---
-            Translation:
-            Explanation:
+            Translation: translate the content
+            Explanation: breadown the sentence into structural segments using bullet points
+            Additional information: add any additional information that might be useful, for example the level of language, or a way to respond properly
             ---
             `
         };
