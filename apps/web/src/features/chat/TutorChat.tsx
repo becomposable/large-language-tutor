@@ -1,5 +1,5 @@
-import { Box, Flex, TextArea, TextField } from "@radix-ui/themes";
-import { KeyboardEvent, useEffect, useRef } from "react";
+import { Box, TextField } from "@radix-ui/themes";
+import { KeyboardEvent, useRef } from "react";
 import { API_BASE_URL } from "../../env";
 import FetchClient from "../../fetch-client";
 
@@ -15,7 +15,7 @@ export default function TutorChat({ }: TutorChatProps) {
             console.log('Ask>>>', prompt);
             e.currentTarget.value = '';
             new FetchClient(API_BASE_URL).post('/prompt', {
-                payload: { prompt: prompt }
+                payload: { message: prompt }
             }).then(r => {
                 console.log('Answer>>>', r.answer);
                 outputRef.current?.append(r.answer + '\n');

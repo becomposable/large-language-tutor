@@ -1,17 +1,22 @@
 import { Resource, get, post } from "@koa-stack/server";
 import { Context } from "koa";
-import { env } from "../env.js";
-import { requestChatCompletion } from "../openai/index.js";
 import OpenAI from "openai";
-import { Stream } from "openai/streaming";
-import SSE from "better-sse";
-import ServerError from "./ServerError.js";
+import { env } from "../env.js";
+import { ChatCompletion, ExplainCompletion } from "../openai/index.js";
 
-//TODO p[ut in a shared project]
-export interface IPromptPayload {
-    prompt: string | string[];
-    session?: string;
+//TODO put in a shared project
+export interface IUserPayload {
+    studyLanguage: string;
+    userLanguage: string;
     stream?: boolean;
+    session?: string;
+}
+export interface IChatPayload extends IUserPayload {
+    message: string | string[];
+}
+
+export interface IExplainPayload extends IUserPayload{
+    content: string;
 }
 
 export default class ApiRoot extends Resource {
@@ -23,10 +28,13 @@ export default class ApiRoot extends Resource {
 
     @post('/prompt')
     async prompt(ctx: Context) {
-        const payload = (await ctx.payload).json as IPromptPayload;
+        console.log('POST /prompt');
+        const payload = (await ctx.payload).json as IChatPayload;
+        const studyLanguage = payload.userLanguage ?? 'Japanese';
+        const userLanguage = payload.studyLanguage ?? 'English';
 
         //TODO the prompt history should be kept in a database
-        const prompt = payload.prompt;
+        const prompt = payload.message;
         if (!prompt) ctx.throw(400, 'Expected a prompt property');
 
         let messages: OpenAI.Chat.ChatCompletionMessage[];
@@ -36,9 +44,10 @@ export default class ApiRoot extends Resource {
             messages = prompt.map((p: string) => ({ role: "user", content: p }));
         }
 
-        const result = await requestChatCompletion(messages, payload.stream);
+        const chatRequest = new ChatCompletion(studyLanguage, userLanguage, messages)
+        const result = await chatRequest.execute();
 
-        if (payload.stream) { // we need to stresam the response
+        /*if (payload.stream) { // we need to stresam the response
             const session = await SSE.createSession(ctx.req, ctx.res);
             if (!session.isConnected) {
                 throw new ServerError('SSE session not connected', 500);
@@ -50,7 +59,28 @@ export default class ApiRoot extends Resource {
         } else {
             const text = (result as OpenAI.Chat.Completions.ChatCompletion).choices[0].message.content;
             ctx.body = { answer: text };
-        }
+        }*/
+
+        const text = result.choices[0].message.content;
+        ctx.body = { answer: text };
 
     }
+
+
+    /** Explain a sentence or word, and return the explanation */
+    @post('/explain')
+    async explain(ctx: Context) {
+        const payload = (await ctx.payload).json as IExplainPayload;
+        const content = payload.content;
+        const studyLanguage = payload.userLanguage ?? 'Japanese';
+        const userLanguage = payload.studyLanguage ?? 'English';
+
+        const explainRequest = new ExplainCompletion(studyLanguage, userLanguage, content);
+        const result = await explainRequest.execute();
+
+        ctx.body = { answer: result };
+
+    }
+
+
 }
