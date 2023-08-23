@@ -1,3 +1,9 @@
+export enum MessageOrigin {
+    user = 'user',
+    assistant = 'assistant',
+    system = 'system',
+}
+
 export enum Languages {
     Japanese = "Japanese",
     English = "English"
@@ -6,7 +12,7 @@ export enum Languages {
 export interface IMessage {
     id: string;
     content: string;
-    role: string;
+    origin: MessageOrigin;
     created: string;
 }
 
