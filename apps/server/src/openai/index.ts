@@ -2,7 +2,7 @@ import OpenAI from 'openai';
 import { Stream } from 'openai/streaming';
 import logger from '../logger.js';
 import { IConversation } from '../models/conversation.js';
-import { findPreviousMessages } from '../models/message.js';
+import { IMessage, MessageStatus, findPreviousMessages } from '../models/message.js';
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
@@ -43,7 +43,7 @@ export abstract class Prompt<T extends Prompt<T>> {
         this.userLanguage = conversation.user_language;
     }
 
-    abstract buildMessages(limit?: number): Promise<OpenAI.Chat.ChatCompletionMessage[]>;
+    abstract buildMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[]>;
 
     async execute(): Promise<OpenAI.Chat.Completions.ChatCompletion> {
         const messages = await this.buildMessages();
@@ -53,8 +53,8 @@ export abstract class Prompt<T extends Prompt<T>> {
         return result;
     }
 
-    async stream(limit = 50): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
-        const messages = await this.buildMessages(limit);
+    async stream(): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
+        const messages = await this.buildMessages();
         logger.log(messages, "Executing a new chat Request in stream mode");
         return requestChatCompletion(messages, true) as Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>>;
     }
@@ -63,13 +63,22 @@ export abstract class Prompt<T extends Prompt<T>> {
 
 export class ChatCompletion extends Prompt<ChatCompletion> {
 
-    constructor(conversation: IConversation) {
-        super(conversation);
-        this.userLevel = "JPLT4";
+    lastMessage?: IMessage;
+    limit: number;
 
+    constructor(conversation: IConversation, limit = 50) {
+        super(conversation);
+        this.limit = limit;
+        //TODO pivk the user level from the user profile
+        this.userLevel = "JPLT4";
     }
 
-    async buildMessages(limit = 50): Promise<OpenAI.Chat.ChatCompletionMessage[]> {
+    beforeMessage(message: IMessage) {
+        this.lastMessage = message;
+        return this;
+    }
+
+    async buildMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[]> {
         let sysMsg = `
         You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         You are chatting with this user to help him/her practice and learn ${this.studyLanguage}.
@@ -88,7 +97,7 @@ export class ChatCompletion extends Prompt<ChatCompletion> {
             sysMsg = sysMsg + `The user is interested in ${this.userInterests.join(",")}. Please use a language appropriate for that age and make sure topics are relevant.`;
         }
 
-        const latestMessages = await findPreviousMessages(this.conversation._id, limit);
+        const latestMessages = await findPreviousMessages(this.conversation._id, { limit: this.limit, status: MessageStatus.active, last: this.lastMessage });
         const messages: OpenAI.Chat.ChatCompletionMessage[] = [];
         messages.push({
             role: "system",

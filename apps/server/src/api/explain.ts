@@ -29,7 +29,7 @@ export class ExplainResource extends Resource {
         }
 
         const explRequest = new ExplainCompletion(expl.conversation, expl.topic, expl.message?.toString());
-        const stream = await explRequest.stream(50);
+        const stream = await explRequest.stream();
         const chunks = [];
         for await (const data of stream) {
             const chunk = data.choices[0]?.delta?.content ?? '';
@@ -96,7 +96,7 @@ export class ExplainResource extends Resource {
 
         ctx.body = jsonDoc(explanation);
         ctx.status = 201;
-        
+
     }
 
 }

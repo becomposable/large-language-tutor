@@ -1,13 +1,13 @@
 import { Box, FormControl, IconButton, Input, useToast } from "@chakra-ui/react";
-import { ChangeEvent, KeyboardEvent, SyntheticEvent, useEffect, useState } from "react";
+import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import { MdSend } from "react-icons/md";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
-import { API_BASE_URL } from "../../env";
-import FetchClient from "../../fetch-client";
 import { useFetch } from "../../hooks/useFetch";
 import { IMessage } from "../../types";
 import MessagesView from "./MessagesView";
+
+
 
 interface TutorChatProps {
     conversationId: string;
@@ -35,13 +35,14 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
         const content = question.trim();
         if (content) {
             setPending(true);
-            new FetchClient(API_BASE_URL).post('/messages', {
+            client.post('/messages', {
                 payload: {
                     conversation: conversationId,
-                    content: question
+                    content: question,
+                    stream: true
                 }
             }).then(r => {
-                setData([...messages!, ...r]);
+                setData(messages!.concat(r));
             }).catch(err => {
                 toast({
                     status: 'error',
@@ -55,35 +56,16 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
         setQuestion('');
     }
 
-    // const onKeUp = (e: KeyboardEvent<HTMLInputElement>) => {
-    //     if (e.key === 'Enter') {
-    //         onAsk();
-    //     }
-    // }
-
     if (error) {
         return <ErrorAlert title='Failed to fetch messages'>{error.message}</ErrorAlert>
     }
 
-    //TODO meed to implement a session on server side in order to use this
-    // useEffect(() => {
-    //     console.log("TutorChat mounted");
-    //     const sse = new EventSource(`${API_BASE_URL}/prompt`);
-    //     sse.addEventListener("message", ({ data }) => {
-    //         console.log('SSE>>>', data);
-    //     });
-    //     return () => {
-    //         console.log("TutorChat unmounted");
-    //         sse.close();
-    //     }
-    // }, []);
-
     return (
         <Box>
             <MessagesView messages={messages || []} isPending={pending} />
-            <form onSubmit={onSubmit}>
+            <form onSubmit={onSubmit} noValidate autoComplete="off">
                 <FormControl display='flex' mt='2'>
-                    <Input placeholder="Type a question" value={question} onChange={onQuestionChanged} />
+                    <Input autoComplete="off" placeholder="Type a question" value={question} onChange={onQuestionChanged} />
                     <IconButton aria-label="Send" title="Send" icon={<MdSend />} type='submit' />
                 </FormControl>
             </form>

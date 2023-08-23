@@ -4,6 +4,12 @@ export enum MessageOrigin {
     system = 'system',
 }
 
+export enum MessageStatus {
+    created = 'created', // created but completion must be started by the user (through streaming)
+    pending = 'pending', // completion is pending
+    active = 'active', // completion is done
+}
+
 export enum Languages {
     Japanese = "Japanese",
     English = "English"
@@ -11,6 +17,7 @@ export enum Languages {
 
 export interface IMessage {
     id: string;
+    status: MessageStatus;
     content: string;
     origin: MessageOrigin;
     created: string;

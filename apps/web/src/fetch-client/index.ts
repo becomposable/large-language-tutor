@@ -70,6 +70,10 @@ export default class FetchClient {
         }
     }
 
+    getUrl(path: string) {
+        return join(this.baseUrl, path);
+    }
+
     get(path: string, params?: IRequestParams) {
         return this.request('GET', path, params);
     }
@@ -91,7 +95,7 @@ export default class FetchClient {
     }
 
     request(method: string, path: string, params?: IRequestParamsWithPayload) {
-        let url = path[0] === '/' ? this.baseUrl + path : this.baseUrl + '/' + path;
+        let url = this.getUrl(path);
         if (params?.query) {
             url += '?' + buildQueryString(params.query);
         }

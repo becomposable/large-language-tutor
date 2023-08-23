@@ -3,7 +3,7 @@ import SSE from "better-sse";
 import { Context } from "koa";
 import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
-import { MessageModel, MessageOrigin } from "../models/message.js";
+import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
 import { ChatCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
 
@@ -21,13 +21,21 @@ export class MessagesResource extends Resource {
             ctx.throw(404, `Message with id ${msgId} not found`);
         }
 
+        if (msg.status !== MessageStatus.created) {
+            ctx.throw(404, `Message with id ${msgId} must be in created state`);
+        }
+
         const session = await SSE.createSession(ctx.req, ctx.res);
         if (!session.isConnected) {
             throw new ServerError('SSE session not connected', 500);
         }
 
-        const chatRequest = new ChatCompletion(msg.conversation);
-        const stream = await chatRequest.stream(50);
+        msg.status = MessageStatus.pending;
+        await msg.save();
+
+        const chatRequest = new ChatCompletion(msg.conversation, 50).beforeMessage(msg);
+        // TODO we mau need to pass a lasyt message
+        const stream = await chatRequest.stream();
         const chunks = [];
         for await (const data of stream) {
             const chunk = data.choices[0]?.delta?.content ?? '';
@@ -35,12 +43,12 @@ export class MessagesResource extends Resource {
             chunks.push(chunk);
         }
 
-        await MessageModel.create({
-            conversation: msg.conversation._id,
-            content: chunks.join(''),
-            origin: MessageOrigin.assistant,
-            in_reply_to: msg._id,
-        });
+        msg.content = chunks.join('');
+        msg.status = MessageStatus.active;
+        await msg.save();
+
+        // send a close event with the crreated document attached
+        session.push(jsonDoc(msg), "close");
 
         ctx.status = 200;
     }
@@ -62,26 +70,27 @@ export class MessagesResource extends Resource {
             origin: MessageOrigin.user,
         });
 
-
-        if (payload.stream) {
-            ctx.body = jsonDoc(message);
-            ctx.status = 201;
-            return; // we are done, the client will stream the completion
-        }
-
-        //not streaming - ask right now for a completion
-        const chatRequest = new ChatCompletion(conversation);
-        const result = await chatRequest.execute();
-        const content = result.choices[0].message.content || '';
-
-        const newMsg = await MessageModel.create({
+        // we create  now the assitant message in pending state
+        const assistantMessage = await MessageModel.create({
             conversation: conversation._id,
-            content: content,
+            content: '',
+            status: payload.stream ? MessageStatus.created : MessageStatus.pending,
             origin: MessageOrigin.assistant,
             in_reply_to: message._id,
         });
 
-        ctx.body = jsonDocs([message, newMsg]);
+        if (!payload.stream) {
+            //not streaming - ask right now for a completion
+            const chatRequest = new ChatCompletion(conversation);
+            const result = await chatRequest.execute();
+            const content = result.choices[0].message.content || '';
+
+            assistantMessage.content = content;
+            assistantMessage.status = MessageStatus.active;
+            await assistantMessage.save();
+        }
+
+        ctx.body = jsonDocs([message, assistantMessage]);
         ctx.status = 201;
     }
 
