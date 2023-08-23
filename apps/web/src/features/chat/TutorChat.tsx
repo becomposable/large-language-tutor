@@ -1,5 +1,5 @@
 import { Box, FormControl, IconButton, Input, useToast } from "@chakra-ui/react";
-import { ChangeEvent, KeyboardEvent, useEffect, useState } from "react";
+import { ChangeEvent, KeyboardEvent, SyntheticEvent, useEffect, useState } from "react";
 import { MdSend } from "react-icons/md";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
@@ -29,7 +29,9 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
         setQuestion(e.target.value);
     }
 
-    const onAsk = () => {
+    const onSubmit = (ev: SyntheticEvent) => {
+        ev.stopPropagation();
+        ev.preventDefault();
         const content = question.trim();
         if (content) {
             setPending(true);
@@ -53,11 +55,11 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
         setQuestion('');
     }
 
-    const onKeUp = (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            onAsk();
-        }
-    }
+    // const onKeUp = (e: KeyboardEvent<HTMLInputElement>) => {
+    //     if (e.key === 'Enter') {
+    //         onAsk();
+    //     }
+    // }
 
     if (error) {
         return <ErrorAlert title='Failed to fetch messages'>{error.message}</ErrorAlert>
@@ -79,10 +81,12 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
     return (
         <Box>
             <MessagesView messages={messages || []} isPending={pending} />
-            <FormControl display='flex' mt='2'>
-                <Input placeholder="Type a question" value={question} onChange={onQuestionChanged} onKeyUp={onKeUp} />
-                <IconButton aria-label="Send" title="Send" icon={<MdSend />} onClick={onAsk} />
-            </FormControl>
+            <form onSubmit={onSubmit}>
+                <FormControl display='flex' mt='2'>
+                    <Input placeholder="Type a question" value={question} onChange={onQuestionChanged} />
+                    <IconButton aria-label="Send" title="Send" icon={<MdSend />} type='submit' />
+                </FormControl>
+            </form>
         </Box>
     )
 }
