@@ -1,10 +1,11 @@
-import { Box, BoxProps, CloseButton, Flex, FlexProps, Icon, Text, useColorModeValue } from "@chakra-ui/react"
+import { Box, BoxProps, CloseButton, Flex, FlexProps, Icon, Text } from "@chakra-ui/react"
 import { SyntheticEvent } from "react"
 import { IconType } from "react-icons"
 import { BsChatText } from "react-icons/bs"
 import { FiHome, FiSettings } from "react-icons/fi"
 import { useNavigate } from "react-router"
 import CreateConversationModal from "../features/conversations/CreateConversationModal"
+import { useAppBgColorModeValue, useAppBorderColorModeValue } from "./colors"
 
 interface LinkItemProps {
     name: string
@@ -41,9 +42,9 @@ export default function SidebarContent({ onClose, ...rest }: SidebarProps) {
     return (
         <Box
             transition="3s ease"
-            bg={useColorModeValue('white', 'gray.900')}
+            bg={useAppBgColorModeValue()}
             borderRight="1px"
-            borderRightColor={useColorModeValue('gray.200', 'gray.700')}
+            borderRightColor={useAppBorderColorModeValue()}
             w={{ base: 'full', md: 60 }}
             pos="fixed"
             h="full"

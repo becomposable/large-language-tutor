@@ -17,6 +17,7 @@ export enum Languages {
 
 export interface IMessage {
     id: string;
+    conversation: string;
     status: MessageStatus;
     content: string;
     origin: MessageOrigin;

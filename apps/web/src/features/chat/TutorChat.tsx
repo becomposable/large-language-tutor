@@ -1,10 +1,10 @@
-import { Box, FormControl, IconButton, Input, useToast } from "@chakra-ui/react";
-import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
+import { Box, Flex, FormControl, IconButton, Input, useToast } from "@chakra-ui/react";
+import { CSSProperties, ChangeEvent, SyntheticEvent, useEffect, useRef, useState } from "react";
 import { MdSend } from "react-icons/md";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
-import { IMessage } from "../../types";
+import { IMessage, MessageOrigin, MessageStatus } from "../../types";
 import MessagesView from "./MessagesView";
 
 
@@ -14,7 +14,6 @@ interface TutorChatProps {
 }
 export default function TutorChat({ conversationId }: TutorChatProps) {
     const toast = useToast({ isClosable: true, duration: 90000 });
-    const [question, setQuestion] = useState('');
     const [pending, setPending] = useState<boolean>(false);
     const { client } = useUserSession();
 
@@ -25,35 +24,44 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
         deps: [conversationId]
     });
 
-    const onQuestionChanged = (e: ChangeEvent<HTMLInputElement>) => {
-        setQuestion(e.target.value);
-    }
 
-    const onSubmit = (ev: SyntheticEvent) => {
-        ev.stopPropagation();
-        ev.preventDefault();
-        const content = question.trim();
-        if (content) {
-            setPending(true);
-            client.post('/messages', {
-                payload: {
-                    conversation: conversationId,
-                    content: question,
-                    stream: true
-                }
-            }).then(r => {
-                setData(messages!.concat(r));
-            }).catch(err => {
-                toast({
-                    status: 'error',
-                    title: 'Failed to send message',
-                    description: err.message
-                })
-            }).finally(() => {
-                setPending(false);
-            });
-        }
-        setQuestion('');
+    const onSubmit = (content: string) => {
+        setPending(true);
+        // window.setTimeout(() => {
+        //     setData(messages!.concat([{
+        //         id: '123',
+        //         status: MessageStatus.active,
+        //         content: content,
+        //         conversation: conversationId,
+        //         origin: MessageOrigin.user,
+        //         created: new Date().toISOString()
+        //     }, {
+        //         id: '123',
+        //         status: MessageStatus.active,
+        //         content: "some response",
+        //         conversation: conversationId,
+        //         origin: MessageOrigin.assistant,
+        //         created: new Date().toISOString()
+        //     }]))
+        //     setPending(false);
+        // }, 3000);
+        client.post('/messages', {
+            payload: {
+                conversation: conversationId,
+                content: content,
+                stream: true
+            }
+        }).then(r => {
+            setData(messages!.concat(r));
+        }).catch(err => {
+            toast({
+                status: 'error',
+                title: 'Failed to send message',
+                description: err.message
+            })
+        }).finally(() => {
+            setPending(false);
+        });
     }
 
     if (error) {
@@ -61,14 +69,67 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
     }
 
     return (
-        <Box>
+        <Box w='100%' position='relative'>
             <MessagesView messages={messages || []} isPending={pending} />
-            <form onSubmit={onSubmit} noValidate autoComplete="off">
+            <ChatFooter onSubmit={onSubmit} />
+        </Box>
+    )
+}
+
+
+interface ChatFooterProps {
+    onSubmit: (content: string) => void;
+}
+function ChatFooter({ onSubmit }: ChatFooterProps) {
+    const [question, setQuestion] = useState('');
+    const [style, setStyle] = useState<CSSProperties>({
+        width: '0px',
+        left: '0',
+        bottom: '0',
+    });
+    const panelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        adjustPosition();
+    }, [panelRef.current])
+
+    const adjustPosition = () => {
+        if (panelRef.current) {
+            const el = panelRef.current;
+            const rect = el.parentElement?.getBoundingClientRect();
+            if (rect) {
+                setStyle({
+                    left: rect.left + 'px',
+                    width: rect.width + 'px',
+                    bottom: '0'
+                });
+            }
+        }
+    }
+
+    const onQuestionChanged = (e: ChangeEvent<HTMLInputElement>) => {
+        setQuestion(e.target.value);
+    }
+
+    const _onSubmit = (ev: SyntheticEvent) => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        const content = question.trim();
+        if (content) {
+            onSubmit(content);
+            setQuestion('');
+        }
+    }
+
+    return (
+        <Flex style={style} ref={panelRef} position='fixed'
+            bg='white' h='6rem' px='10' py='10' align='center' justify='center'>
+            <Box as='form' onSubmit={_onSubmit} noValidate autoComplete="off" w='90%'>
                 <FormControl display='flex' mt='2'>
-                    <Input autoComplete="off" placeholder="Type a question" value={question} onChange={onQuestionChanged} />
+                    <Input autoComplete="off" placeholder="Type a question" value={question} onChange={onQuestionChanged} mr='1' />
                     <IconButton aria-label="Send" title="Send" icon={<MdSend />} type='submit' />
                 </FormControl>
-            </form>
-        </Box>
+            </Box>
+        </Flex>
     )
 }

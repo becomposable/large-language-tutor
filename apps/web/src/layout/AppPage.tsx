@@ -18,7 +18,7 @@ export default function AppPage({ children }: AppPageProps) {
     const { isOpen, onOpen, onClose } = useDisclosure()
 
     return (
-        <Box minH="100vh">
+        <Box h='100%'>
             <SidebarContent onClose={() => onClose} display={{ base: 'none', md: 'block' }} />
             <Drawer
                 isOpen={isOpen}
@@ -33,7 +33,7 @@ export default function AppPage({ children }: AppPageProps) {
             </Drawer>
             {/* mobilenav */}
             <MobileNav onOpen={onOpen} />
-            <Box ml={{ base: 0, md: 60 }} p="4">
+            <Box ml={{ base: 0, md: 60 }} p="4" h='100%'>
                 {children}
             </Box>
         </Box>

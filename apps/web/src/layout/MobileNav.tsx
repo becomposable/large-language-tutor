@@ -1,9 +1,10 @@
-import { Avatar, Box, Flex, FlexProps, HStack, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Text, VStack, useColorModeValue } from "@chakra-ui/react"
+import { Avatar, Box, Flex, FlexProps, HStack, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Text, VStack } from "@chakra-ui/react"
 import {
-    FiMenu,
     FiBell,
     FiChevronDown,
+    FiMenu,
 } from 'react-icons/fi'
+import { useAppBgColorModeValue, useAppBorderColorModeValue } from "./colors"
 
 interface MobileNavProps extends FlexProps {
     onOpen: () => void
@@ -15,9 +16,9 @@ export default function MobileNav({ onOpen, ...rest }: MobileNavProps) {
             px={{ base: 4, md: 4 }}
             height="20"
             alignItems="center"
-            bg={useColorModeValue('white', 'gray.900')}
+            bg={useAppBgColorModeValue()}
+            borderBottomColor={useAppBorderColorModeValue()}
             borderBottomWidth="1px"
-            borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
             justifyContent={{ base: 'space-between', md: 'flex-end' }}
             {...rest}>
             <IconButton
@@ -64,8 +65,8 @@ export default function MobileNav({ onOpen, ...rest }: MobileNavProps) {
                             </HStack>
                         </MenuButton>
                         <MenuList
-                            bg={useColorModeValue('white', 'gray.900')}
-                            borderColor={useColorModeValue('gray.200', 'gray.700')}>
+                            bg={useAppBgColorModeValue()}
+                            borderColor={useAppBorderColorModeValue()}>
                             <MenuItem>Profile</MenuItem>
                             <MenuItem>Settings</MenuItem>
                             <MenuItem>Billing</MenuItem>

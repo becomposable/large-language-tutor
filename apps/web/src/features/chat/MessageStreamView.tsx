@@ -5,8 +5,9 @@ import MessageView from "./MessageView";
 
 interface MessageStreamViewProps {
     message: IMessage;
+    onAdjustScroll: () => void;
 }
-export default function MessageStreamView({ message }: MessageStreamViewProps) {
+export default function MessageStreamView({ message, onAdjustScroll }: MessageStreamViewProps) {
 
     const { client } = useUserSession();
     const [content, setContent] = useState<string>('');
@@ -20,12 +21,14 @@ export default function MessageStreamView({ message }: MessageStreamViewProps) {
             if (data) {
                 chunks.push(data);
                 setContent(chunks.join(''))
+                onAdjustScroll();
             }
         });
         sse.addEventListener("close", (ev) => {
             sse.close();
             const msg = JSON.parse(ev.data)
             setCompletedMessage(msg);
+            onAdjustScroll();
         });
         return () => {
             sse.close();

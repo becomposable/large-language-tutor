@@ -24,7 +24,7 @@ export default function ConversationView({ conversationId }: ConversationViewPro
     }
 
     return (
-        <Box>
+        <Box w='100%'>
             <Flex justify='space-between' align='center' w='100%' px='4'>
                 <Heading size='md' display='flex' alignItems='center'>
                     <Box>{getConversationTitle(conversation)}</Box>
