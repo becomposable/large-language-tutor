@@ -3,6 +3,8 @@ import { Context } from "koa";
 import { ConversationModel } from "../models/conversation.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
 import { MessageModel } from "../models/message.js";
+import { ObjectId } from "mongodb";
+
 
 class ConversationResource extends Resource {
     @get('/')
@@ -22,14 +24,17 @@ class ConversationResource extends Resource {
         //TODO last not yet implemented
         //const last = ctx.query.last; // last message id - to be used to appky the tail
         // if tail is specifid we only return the last ${tail} messages
-        const tail = ctx.query.tail ? parseInt(ctx.query.tail as string) : 20; // last 20 messages
+        // if from is specified, should be the last message id to start from
+        const tail = ctx.query.tail ? parseInt(ctx.query.tail as string) : 50;
+        const from = ctx.query.from ? parseInt(ctx.query.from as string) : 0;
+        const cid = new ObjectId(ctx.params.conversationId);
 
         if (isNaN(tail) || tail < 0) {
             ctx.throw(400, 'Invalid tail parameter. Expecting a positive integer');
         }
 
         //TODO for now we list all conversations since we don't have authentication yet
-        const messages = await MessageModel.find({}).sort({ created: -1 }).limit(tail);
+        const messages = await MessageModel.find({ conversation: cid }).sort({ created: -1 }).skip(from).limit(tail);
         ctx.body = jsonDocs(messages.reverse());
     }
 
