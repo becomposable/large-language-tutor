@@ -11,6 +11,7 @@ export interface IConversation {
     user_language: string, // language code
     waiting_for_completion: boolean,
     user?: string | ObjectIdType; //the user id
+    title?: string,
     created: Date,
 }
 
@@ -19,8 +20,9 @@ export const ConversationSchema = new mongoose.Schema<IConversation>({
     study_language: { type: String, required: true },
     user_language: { type: String, required: true },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
+    title: { type: String, required: false },
 }, {
-    timestamps: { createdAt: 'created' }
+    timestamps: { createdAt: 'created', updatedAt: 'modified' }
 });
 
 ConversationSchema.virtual('id').get(function (this: mongoose.Document) {

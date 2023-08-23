@@ -1,10 +1,12 @@
+import { DeleteIcon } from "@chakra-ui/icons";
 import { Box, Flex, IconButton, VStack } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
+import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
 import useFetchOnce from "../../hooks/useFetch";
-import ErrorAlert from "../../components/ErrorAlert";
 import { IConversation } from "../../types";
-import { Link } from "react-router-dom";
-import { DeleteIcon } from "@chakra-ui/icons";
+import { getConversationTitle } from "./utils";
+import StyledIconButton from "../../components/StyledIconButton";
 
 export default function ConversationsView() {
     const { client } = useUserSession();
@@ -32,9 +34,11 @@ interface ConversationItemProps {
 function ConversationItem({ conversation }: ConversationItemProps) {
     return (
         <Flex p='4' borderBottom='1px solid' borderBottomColor='gray.100' w='100%'
-            justify='space-between'>
-            <Link to={`/conversations/${conversation.id}`}>{conversation.created}</Link>
-            <IconButton aria-label='delete' icon={<DeleteIcon />} />
+            align='baseline'
+            justify='start'>
+            <Link to={`/conversations/${conversation.id}`}>{getConversationTitle(conversation)}</Link>
+            <Box ml='4' color='gray' fontWeight='bold' fontSize='smaller'>{conversation.study_language}</Box>
+            <StyledIconButton ml='auto' aria-label='delete' hoverBg='red.100' icon={<DeleteIcon />} />
         </Flex >
     )
 }

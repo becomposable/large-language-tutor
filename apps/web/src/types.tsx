@@ -11,7 +11,8 @@ export interface IMessage {
 }
 
 export interface IConversation {
-    waiting_for_completion: boolean
+    title?: string,
+    waiting_for_completion: boolean,
     study_language: Languages,
     user_language: Languages,
     created: string,

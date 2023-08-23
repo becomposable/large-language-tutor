@@ -1,17 +1,24 @@
 import { AddIcon } from "@chakra-ui/icons";
-import { Button, IconButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, useDisclosure } from "@chakra-ui/react";
+import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, useDisclosure } from "@chakra-ui/react";
+import { SyntheticEvent } from "react";
+import StyledIconButton from "../../components/StyledIconButton";
 
 
 interface CreateConversationModalProps {
 }
 export default function CreateConversationModal({ }: CreateConversationModalProps) {
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const onOpenModal = (e: SyntheticEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onOpen();
+    }
     return (
         <>
-            <IconButton rounded='full' variant='ghost' aria-label="Create a new conversation"
+            <StyledIconButton
                 title='Create a new conversation'
                 icon={<AddIcon />}
-                onClick={onOpen}
+                onClick={onOpenModal}
             />
             <Portal>
                 <Modal isOpen={isOpen} onClose={onClose}>

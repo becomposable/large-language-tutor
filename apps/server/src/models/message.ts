@@ -27,7 +27,7 @@ export const MessageSchema = new mongoose.Schema<IMessage>({
     in_reply_to: { type: ObjectId, ref: 'Message', required: false, index: true },
     content: String,
 }, {
-    timestamps: { createdAt: 'created' }
+    timestamps: { createdAt: 'created', updatedAt: 'modified' }
 });
 
 MessageSchema.virtual('id').get(function (this: mongoose.Document) {

@@ -26,7 +26,7 @@ export const ExplanationSchema = new mongoose.Schema<IExplanation>({
     user: { type: ObjectId, ref: 'User', required: false, index: true },
     content: String,
 }, {
-    timestamps: { createdAt: 'created' }
+    timestamps: { createdAt: 'created', updatedAt: 'modified' }
 });
 
 ExplanationSchema.virtual('id').get(function (this: mongoose.Document) {
