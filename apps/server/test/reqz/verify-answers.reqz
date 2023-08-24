@@ -1,0 +1,31 @@
+var story, lang
+
+
+POST http://localhost:8089/api/v1/stories/${story}/verify_answers
+Content-Type: application/json
+
+{
+    user_language: lang ?? 'EN',
+    answers: [
+    {
+      "question": "Qui sont les deux personnages principaux de l'histoire ?",
+      "answer": "Jake Paul et Winston Churchill"
+    },
+    {
+      "question": "Pourquoi Jake Paul a-t-il défié Winston Churchill ?",
+      "answer": "Parce que Jake a un ego gonflé"
+    },
+    {
+      "question": "Quelle était l'atmosphère le jour du débat ?",
+        "answer": "Très zen"
+    },
+    {
+      "question": "Comment Paul a-t-il réagi après le discours de Churchill ?",
+        "answer": "Il a été impressionné"
+    },
+    {
+      "question": "Quel est le message final de Churchill à Paul ?",
+        "answer": "L'âge n'a rien à voir avec la sagesse"
+    }
+  ]
+}

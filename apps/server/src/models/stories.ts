@@ -5,13 +5,13 @@ import { IUser } from './user.js';
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
-
 export interface IStory {
     readonly id: string,
     readonly _id: ObjectIdType,
     created: Date,
     content: string,
     questions?: string[],
+    language?: string,
     topic?: string,
     user?: string | ObjectIdType | IUser,
 }
@@ -32,3 +32,4 @@ StorySchema.virtual('id').get(function (this: mongoose.Document) {
 export type StoryDocument = mongoose.Document<ObjectIdType, any, IStory> & IStory;
 
 export const Story = mongoose.model<StoryDocument>('Story', StorySchema);
+

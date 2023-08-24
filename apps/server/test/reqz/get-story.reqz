@@ -1,0 +1,4 @@
+var story
+
+GET http://localhost:8089/api/v1/stories/${story}
+Content-Type: application/json

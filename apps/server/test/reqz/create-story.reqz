@@ -1,10 +1,13 @@
-var lang
+var lang, topic?, style?, level?
 
 
-GET http://localhost:8089/api/v1/stories
+POST http://localhost:8089/api/v1/stories
 Content-Type: application/json
 
 {
-    user_language: 'EN'
+    user_language: 'FR',
     study_language: lang ?? 'JP',
+    topic: topic ?? undefined,
+    level: level ?? undefined,
+    style: style ?? undefined,
 }

@@ -92,7 +92,7 @@ export default class ApiRoot extends Resource {
         router.mount('/conversations', ConversationsResource);
         router.mount('/messages', MessagesResource);
         router.mount('/explain', ExplainResource);
-        router.mount('/explain', StoriesResource);
+        router.mount('/stories', StoriesResource);
     }
 
 

@@ -12,5 +12,8 @@
         "./packages/*",
         "./apps/*"
     ],
-    "packageManager": "npm@latest"
+    "packageManager": "npm@latest",
+    "dependencies": {
+        "@types/json-schema": "^7.0.12"
+    }
 }

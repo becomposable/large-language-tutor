@@ -17,25 +17,27 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
 
     studyLanguage: string;
     userLanguage: string;
+    schema?: Object;
     userInterests?: string[];
     //TODO the conversation has a user reference sop we can fetch the user info with a populate
     userAge?: number;
     userLevel?: string;
 
-    constructor(study_language?: string, user_language?: string) {
+    constructor(study_language?: string, user_language?: string, schema?: Object) {
         this.studyLanguage = study_language ?? 'Japanese';
         this.userLanguage = user_language ?? 'English';
+        this.schema = schema;
     }
 
     getSafetyMsg(): string {
         const msg = `
         The user is at level ${this.userLevel} in ${this.studyLanguage}.
         Please only use words and structure that should be accessible for this level in the language.`;
-        
+
         return msg;
     }
 
-    
+
     abstract getAppInstruction(): string | null;
 
     abstract getUserMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[] | undefined>;
@@ -45,7 +47,7 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
         const messages = [];
 
         const disclaimerMsg: OpenAI.Chat.ChatCompletionMessage = {
-            role: "system", 
+            role: "system",
             content: this.getSafetyMsg()
         };
         if (disclaimerMsg.content) messages.push(disclaimerMsg);
@@ -69,8 +71,10 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
     async execute(): Promise<OpenAI.Chat.Completions.ChatCompletion> {
         const messages = await this.buildMessages();
         logger.log(messages, "Executing a new chat Request");
+        const start = Date.now();
         const result = await this.requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
-        logger.log(result, "Chat Request result");
+        const duration = Date.now() - start;
+        logger.log(`Chat Result received in ${duration/1000}s`, result);
         return result;
     }
 
@@ -83,16 +87,38 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
 
     async requestChatCompletion(messages: OpenAI.Chat.ChatCompletionMessage[], stream = false, temperature = 0.5) {
 
-        console.log(messages, "Requestion chat completion")
-    
-        return openai.chat.completions.create({
+        console.log(messages, "Requesting chat completion")
+
+        const functions = this.schema ? [{
+            name: "format_output",
+            parameters: this.schema as any
+        }] : undefined;
+
+        //if we're streaming, return right away, don't pass functions
+        if (stream) {
+            return openai.chat.completions.create({
+                stream: stream,
+                model: "gpt-4",
+                messages: messages,
+                temperature: temperature,
+                n: 1,
+                max_tokens: 2048,
+            });
+        }
+
+        const res = await openai.chat.completions.create({
             stream: stream,
             model: "gpt-4",
             messages: messages,
             temperature: temperature,
             n: 1,
             max_tokens: 2048,
+            functions: functions,
+            function_call: this.schema ? { name: "format_output" } : undefined
         });
+
+        return res;
+
     }
 }
 
@@ -107,7 +133,7 @@ export class ConversationCompletion extends CompletionBase<ConversationCompletio
         this.conversation = conversation;
 
         this.limit = limit;
-        
+
         //TODO pivk the user level from the user profile
         this.userLevel = "JPLT4";
     }
@@ -118,7 +144,7 @@ export class ConversationCompletion extends CompletionBase<ConversationCompletio
     }
 
     getAppInstruction(): string {
-    
+
         return `
         You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         You are chatting with this user to help him/her practice and learn ${this.studyLanguage}.
