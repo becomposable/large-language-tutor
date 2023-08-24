@@ -1,6 +1,5 @@
 import type { ObjectId as ObjectIdType } from 'mongoose';
 import mongoose from 'mongoose';
-import { IConversation } from './conversation.js';
 import { IUser } from './user.js';
 
 const Schema = mongoose.Schema;

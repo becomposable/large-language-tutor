@@ -17,7 +17,7 @@ export class StoriesResource extends Resource {
 
         const payload = (await ctx.payload).json;
         const studyLanguage = payload.studyLanguage ?? 'Japanese';
-        const userLanguage = payload.userLanguage ?? 'English';
+        //const userLanguage = payload.userLanguage ?? 'English';
 
         const storyRequest = new StoryGenerator(studyLanguage);
         const result = await storyRequest.execute();

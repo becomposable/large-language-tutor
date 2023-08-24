@@ -1,20 +1,17 @@
 import { Box, Flex } from "@chakra-ui/react";
-import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
+import { useEffect, useRef } from "react";
 import { IMessage, MessageStatus } from "../../types";
-import MessageBox from "./MessageBox";
 import MessageStreamView from "./MessageStreamView";
 import MessageView from "./MessageView";
-import { useEffect, useRef } from "react";
 
 interface MessagesViewProps {
     messages: IMessage[];
-    isPending: boolean;
 }
-export default function MessagesView({ messages, isPending }: MessagesViewProps) {
+export default function MessagesView({ messages }: MessagesViewProps) {
     const scrollTargetRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
         onAdjustScroll();
-    }, [messages, isPending]);
+    }, [messages]);
 
     const onAdjustScroll = () => {
         scrollTargetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -32,17 +29,8 @@ export default function MessagesView({ messages, isPending }: MessagesViewProps)
                         }
                     })
                 }
-                {isPending && <PendingMessageBox />}
             </Flex>
             <Box ref={scrollTargetRef} position='relative' h='8rem' w='100%' />
         </Box>
-    )
-}
-
-function PendingMessageBox() {
-    return (
-        <MessageBox display='flex' justifyContent='center' alignItems='center'>
-            <EllipsisAnim fontSize='24px' />
-        </MessageBox>
     )
 }

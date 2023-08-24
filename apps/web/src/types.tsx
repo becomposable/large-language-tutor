@@ -33,3 +33,14 @@ export interface IConversation {
     updated: string,
     id: string
 }
+
+export interface IExplanation {
+    readonly id: string,
+    created: string,
+    topic: string,
+    content?: string,
+    conversation?: string,
+    message?: string
+    user?: string
+}
+

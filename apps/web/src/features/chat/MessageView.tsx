@@ -4,6 +4,8 @@ import MessageBox from "./MessageBox";
 import StyledIconButton from "../../components/StyledIconButton";
 import { MdLightbulb, MdLightbulbOutline, MdOutlineHelpOutline, MdOutlineVolumeUp } from "react-icons/md";
 import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
+import ExplainModal from "./ExplainModal";
+import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
 
 interface MessageViewProps {
     message: IMessage;
@@ -38,14 +40,14 @@ export default function MessageView({ message }: MessageViewProps) {
                 {
                     isActive && <HStack>
                         <StyledIconButton title='Pronunciation' icon={<MdOutlineVolumeUp />} onClick={onPronunciation} />
-                        <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={onExplain} />
+                        <ExplainModal messageId={message.id} />
                     </HStack>
                 }
             </Flex>
-            <Box>{message.content}</Box>
-            {
-                isPending && <Center><EllipsisAnim fontSize='24px' /></Center>
-            }
+            <Box>
+                {message.content}
+                {isPending && <DefaultBlinkingCursor />}
+            </Box>
         </MessageBox>
     )
 }

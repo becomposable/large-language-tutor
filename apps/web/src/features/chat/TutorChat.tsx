@@ -14,7 +14,6 @@ interface TutorChatProps {
 }
 export default function TutorChat({ conversationId }: TutorChatProps) {
     const toast = useToast({ isClosable: true, duration: 90000 });
-    const [pending, setPending] = useState<boolean>(false);
     const { client } = useUserSession();
 
     const { data: messages, setData, error } = useFetch<IMessage[]>(() => {
@@ -26,7 +25,6 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
 
 
     const onSubmit = (content: string) => {
-        setPending(true);
         // window.setTimeout(() => {
         //     setData(messages!.concat([{
         //         id: '123',
@@ -59,8 +57,6 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
                 title: 'Failed to send message',
                 description: err.message
             })
-        }).finally(() => {
-            setPending(false);
         });
     }
 
@@ -70,7 +66,7 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
 
     return (
         <Box w='100%' position='relative'>
-            <MessagesView messages={messages || []} isPending={pending} />
+            <MessagesView messages={messages || []} />
             <ChatFooter onSubmit={onSubmit} />
         </Box>
     )

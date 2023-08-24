@@ -15,7 +15,7 @@ export default function MessageStreamView({ message, onAdjustScroll }: MessageSt
 
     useEffect(() => {
         const chunks: string[] = [];
-        const sse = new EventSource(client.getUrl(`/messages/sse/${message.id}`));
+        const sse = new EventSource(client.getUrl(`/messages/${message.id}/stream`));
         sse.addEventListener("message", ev => {
             const data = JSON.parse(ev.data);
             if (data) {

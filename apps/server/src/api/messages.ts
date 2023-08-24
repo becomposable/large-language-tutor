@@ -1,4 +1,4 @@
-import { Resource, get, post } from "@koa-stack/server";
+import { Resource, Router, get, post } from "@koa-stack/server";
 import SSE from "better-sse";
 import { Context } from "koa";
 import ServerError from "../errors/ServerError.js";
@@ -6,11 +6,61 @@ import { ConversationModel, IConversation } from "../models/conversation.js";
 import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
 import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
+import { Explanation } from "../models/explanation.js";
+import ExplainCompletion from "../openai/ExplainCompletion.js";
 
 
 export class MessagesResource extends Resource {
 
-    @get('/sse/:messageId')
+    @post('/')
+    async postMessage(ctx: Context) {
+        const payload = (await ctx.payload).json;
+
+        const conversation = await ConversationModel.findById(payload.conversation);
+        if (!conversation) {
+            throw new ServerError(`Conversation with id ${payload.conversation} not found`, 404);
+        }
+
+        const message = await MessageModel.create({
+            conversation: conversation._id,
+            content: payload.content,
+            origin: MessageOrigin.user,
+        });
+
+        // we create  now the assitant message in pending state
+        const assistantMessage = await MessageModel.create({
+            conversation: conversation._id,
+            content: '',
+            status: payload.stream ? MessageStatus.created : MessageStatus.pending,
+            origin: MessageOrigin.assistant,
+            in_reply_to: message._id,
+        });
+
+        if (!payload.stream) {
+            //not streaming - ask right now for a completion
+            const chatRequest = new ConversationCompletion(conversation);
+            const result = await chatRequest.execute();
+            const content = result.choices[0].message.content || '';
+
+            assistantMessage.content = content;
+            assistantMessage.status = MessageStatus.active;
+            await assistantMessage.save();
+        }
+
+        ctx.body = jsonDocs([message, assistantMessage]);
+        ctx.status = 201;
+    }
+
+    setup(router: Router): void {
+        super.setup(router);
+        router.mount('/:messageId', MessageResource);
+    }
+}
+
+class MessageResource extends Resource {
+
+
+    @get('/stream')
     async streamMessageCompletion(ctx: Context) {
         const msgId = ctx.params.messageId;
         const msg = await MessageModel.findById(msgId).populate<{
@@ -53,45 +103,60 @@ export class MessagesResource extends Resource {
         ctx.status = 200;
     }
 
+    @get('/explain/stream')
+    async streamExplainMessage(ctx: Context) {
+        const msgId = ctx.params.messageId;
+        let expl = await Explanation.findOne({ message: msgId });
 
-
-    @post('/')
-    async postMessage(ctx: Context) {
-        const payload = (await ctx.payload).json;
-
-        const conversation = await ConversationModel.findById(payload.conversation);
-        if (!conversation) {
-            throw new ServerError(`Conversation with id ${payload.conversation} not found`, 404);
+        const session = await SSE.createSession(ctx.req, ctx.res);
+        if (!session.isConnected) {
+            throw new ServerError('SSE session not connected', 500);
         }
 
-        const message = await MessageModel.create({
-            conversation: conversation._id,
-            content: payload.content,
-            origin: MessageOrigin.user,
-        });
+        if (expl && expl.content) {
+            // stream the existing content
+            const chunks = expl.content.split(/\b/);
+            for (const chunk of chunks) {
+                session.push(chunk);
+            }
+        } else { // we need to complete the explanation
+            const message = await MessageModel.findById(msgId).populate<{
+                conversation: IConversation,
+            }>('conversation');
+            if (!message) {
+                ctx.throw(404, 'Message not found')
+            }
+            if (!message.content) {
+                ctx.throw(400, 'Message has no content')
+            }
+            const explRequest = new ExplainCompletion(message.conversation, message.content, msgId);
+            const stream = await explRequest.stream();
+            const chunks = [];
+            for await (const data of stream) {
+                const chunk = data.choices[0]?.delta?.content ?? '';
+                session.push(chunk);
+                chunks.push(chunk);
+            }
+            const content = chunks.join('');
 
-        // we create  now the assitant message in pending state
-        const assistantMessage = await MessageModel.create({
-            conversation: conversation._id,
-            content: '',
-            status: payload.stream ? MessageStatus.created : MessageStatus.pending,
-            origin: MessageOrigin.assistant,
-            in_reply_to: message._id,
-        });
-
-        if (!payload.stream) {
-            //not streaming - ask right now for a completion
-            const chatRequest = new ConversationCompletion(conversation);
-            const result = await chatRequest.execute();
-            const content = result.choices[0].message.content || '';
-
-            assistantMessage.content = content;
-            assistantMessage.status = MessageStatus.active;
-            await assistantMessage.save();
+            if (!expl) {
+                // create the explanation object
+                expl = await Explanation.create({
+                    topic: message.content,
+                    conversation: message.conversation,
+                    message: message.id,
+                    user: message.conversation.user,
+                    content: content
+                });
+            } else {
+                expl.content = content;
+                await expl.save();
+            }
         }
 
-        ctx.body = jsonDocs([message, assistantMessage]);
-        ctx.status = 201;
+        session.push(jsonDoc(expl), 'close')
+
+        ctx.body = 200;
     }
 
 }
