@@ -34,7 +34,7 @@ export default function MessagesView({ messages, isPending }: MessagesViewProps)
                 }
                 {isPending && <PendingMessageBox />}
             </Flex>
-            <Box ref={scrollTargetRef} position='relative' h='6rem' w='100%' />
+            <Box ref={scrollTargetRef} position='relative' h='8rem' w='100%' />
         </Box>
     )
 }

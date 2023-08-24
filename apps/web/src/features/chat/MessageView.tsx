@@ -2,7 +2,7 @@ import { Avatar, Box, Center, Flex, HStack, Heading } from "@chakra-ui/react";
 import { IMessage, MessageOrigin, MessageStatus } from "../../types";
 import MessageBox from "./MessageBox";
 import StyledIconButton from "../../components/StyledIconButton";
-import { MdOutlineHelpOutline, MdOutlineVolumeUp } from "react-icons/md";
+import { MdLightbulb, MdLightbulbOutline, MdOutlineHelpOutline, MdOutlineVolumeUp } from "react-icons/md";
 import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
 
 interface MessageViewProps {
@@ -38,7 +38,7 @@ export default function MessageView({ message }: MessageViewProps) {
                 {
                     isActive && <HStack>
                         <StyledIconButton title='Pronunciation' icon={<MdOutlineVolumeUp />} onClick={onPronunciation} />
-                        <StyledIconButton title='Explain' icon={<MdOutlineHelpOutline />} onClick={onExplain} />
+                        <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={onExplain} />
                     </HStack>
                 }
             </Flex>

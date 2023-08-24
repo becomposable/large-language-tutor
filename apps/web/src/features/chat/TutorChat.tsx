@@ -123,9 +123,13 @@ function ChatFooter({ onSubmit }: ChatFooterProps) {
 
     return (
         <Flex style={style} ref={panelRef} position='fixed'
-            bg='white' h='6rem' px='10' py='10' align='center' justify='center'>
+            h='8rem' px='10' py='10' align='center' justify='center'
+            sx={{
+                backgroundImage: "linear-gradient(180deg,hsla(0,0%,100%,0) 13.94%,#fff 54.73%)"
+            }}
+        >
             <Box as='form' onSubmit={_onSubmit} noValidate autoComplete="off" w='90%'>
-                <FormControl display='flex' mt='2'>
+                <FormControl display='flex' mt='2' bg='white'>
                     <Input autoComplete="off" placeholder="Type a question" value={question} onChange={onQuestionChanged} mr='1' />
                     <IconButton aria-label="Send" title="Send" icon={<MdSend />} type='submit' />
                 </FormControl>
