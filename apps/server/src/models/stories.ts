@@ -11,18 +11,15 @@ export interface IStory {
     readonly id: string,
     readonly _id: ObjectIdType,
     created: Date,
-    topic: string,
-    content?: string,
-    conversation?: string | ObjectIdType | IConversation,
-    message?: string | ObjectIdType,
+    content: string,
+    questions?: string[],
+    topic?: string,
     user?: string | ObjectIdType | IUser,
 }
 
 export const StorySchema = new mongoose.Schema<IStory>({
-    topic: { type: String, required: true, index: true },
+    topic: { type: String, required: false, index: false },
     created: { type: Date, index: true },
-    conversation: { type: ObjectId, ref: 'Conversation', required: false, index: true },
-    message: { type: ObjectId, ref: 'Message', required: false, index: true },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
     content: String,
 }, {

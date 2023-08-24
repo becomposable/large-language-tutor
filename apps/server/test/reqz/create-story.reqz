@@ -1,0 +1,10 @@
+var lang
+
+
+GET http://localhost:8089/api/v1/stories
+Content-Type: application/json
+
+{
+    user_language: 'EN'
+    study_language: lang ?? 'JP',
+}

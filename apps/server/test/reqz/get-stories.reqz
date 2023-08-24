@@ -1,0 +1,4 @@
+var message, cid
+
+GET http://localhost:8089/api/v1/stories
+Content-Type: application/json
