@@ -1,12 +1,11 @@
 import { Box, Button, Center, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { IExplanation } from "../../types";
-import { useUserSession } from "../../context/UserSession";
-import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
-import BlinkingCursor from "../../components/ellipsis-anim/BlinkingCursor";
-import StyledIconButton from "../../components/StyledIconButton";
 import { MdLightbulbOutline } from "react-icons/md";
+import StyledIconButton from "../../components/StyledIconButton";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
+import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
+import { useUserSession } from "../../context/UserSession";
+import { IExplanation } from "../../types";
 
 
 
@@ -21,12 +20,13 @@ export default function ExplainModal({ messageId }: ExplainModalProps) {
 
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
-                <ModalContent>
+                <ModalContent minW='50vw'>
                     <ModalHeader>Explanation</ModalHeader>
                     <ModalCloseButton />
-                    <ModalBody height='80vh'>
-                        {/*<ExplainMessageStreamView messageId={messageId} />*/}
-                        Bla bla <DefaultBlinkingCursor /> bla bla
+                    <ModalBody>
+                        <Box h='60vh' overflowY='auto'>
+                            <ExplainMessageStreamView messageId={messageId} />
+                        </Box>
                     </ModalBody>
                     <ModalFooter>
                         <Button colorScheme='blue' mr={3} onClick={onClose}>
@@ -70,8 +70,10 @@ function ExplainMessageStreamView({ messageId }: ExplainMessageStreamViewProps) 
 
     return (
         <Box w='100%' h='100%'>
-            <Box>{explanation?.content || content}</Box>
-            {!explanation && <Center><EllipsisAnim fontSize='24px' /></Center>}
+            <Box>
+                {explanation?.content || content}
+                {!explanation && <DefaultBlinkingCursor />}
+            </Box>
         </Box>
     )
 }
