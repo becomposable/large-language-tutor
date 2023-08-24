@@ -4,7 +4,7 @@ import { Context } from "koa";
 import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
 import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
-import { ChatCompletion } from "../openai/index.js";
+import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
 
 
@@ -33,7 +33,7 @@ export class MessagesResource extends Resource {
         msg.status = MessageStatus.pending;
         await msg.save();
 
-        const chatRequest = new ChatCompletion(msg.conversation, 50).beforeMessage(msg);
+        const chatRequest = new ConversationCompletion(msg.conversation, 50).beforeMessage(msg);
         // TODO we mau need to pass a lasyt message
         const stream = await chatRequest.stream();
         const chunks = [];
@@ -81,7 +81,7 @@ export class MessagesResource extends Resource {
 
         if (!payload.stream) {
             //not streaming - ask right now for a completion
-            const chatRequest = new ChatCompletion(conversation);
+            const chatRequest = new ConversationCompletion(conversation);
             const result = await chatRequest.execute();
             const content = result.choices[0].message.content || '';
 

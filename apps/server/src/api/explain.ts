@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
 import { Explanation } from "../models/explanation.js";
-import { Prompt } from "../openai/index.js";
+import { CompletionBase } from "../openai/index.js";
 import { jsonDoc } from "./utils.js";
 
 
@@ -101,29 +101,28 @@ export class ExplainResource extends Resource {
 
 }
 
-class ExplainCompletion extends Prompt<ExplainCompletion> {
+class ExplainCompletion extends CompletionBase<ExplainCompletion> {
 
     content: string
     messageId?: string;
 
     constructor(conversation: IConversation, content: string, messageId?: string) {
-        super(conversation);
+        super(conversation.study_language, conversation.user_language);
         this.content = content;
         this.messageId = messageId;
     }
 
-    buildMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[]> {
-        const sysMsg: OpenAI.Chat.ChatCompletionMessage = {
-            role: "system",
-            content: `You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
-            Please answer in ${this.userLanguage}. 
-            Reply with a translation, an explanation of the structure of the sentence if it's a sentence or a definition of the word if it's a word.
-            If the content has mistake, please correct it and explain the mistake.
-            Please use simple words and short sentences.
-            Finish with an advice on how to use or how to answer to the content.
-            `
-        };
+    getAppInstruction(): string {
+        return `You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
+        Please answer in ${this.userLanguage}. 
+        Reply with a translation, an explanation of the structure of the sentence if it's a sentence or a definition of the word if it's a word.
+        If the content has mistake, please correct it and explain the mistake.
+        Please use simple words and short sentences.
+        Finish with an advice on how to use or how to answer to the content.`;
+    }
 
+    getUserMessages(): Promise<OpenAI.Chat.ChatCompletionMessage[]> {
+        
         const userMsg: OpenAI.Chat.ChatCompletionMessage = {
             role: "user",
             content: `
@@ -132,11 +131,7 @@ class ExplainCompletion extends Prompt<ExplainCompletion> {
             `,
         };
 
-        const messages: OpenAI.Chat.ChatCompletionMessage[] = [];
-        messages.push(sysMsg);
-        messages.push(userMsg);
-
-        return Promise.resolve(messages);
+        return Promise.resolve([userMsg]);
     }
 
 }
