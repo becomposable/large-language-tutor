@@ -1,11 +1,10 @@
-import { Avatar, Box, Center, Flex, HStack, Heading } from "@chakra-ui/react";
-import { IMessage, MessageOrigin, MessageStatus } from "../../types";
-import MessageBox from "./MessageBox";
+import { Avatar, Box, Flex, HStack, Heading } from "@chakra-ui/react";
+import { MdOutlineVolumeUp } from "react-icons/md";
 import StyledIconButton from "../../components/StyledIconButton";
-import { MdLightbulb, MdLightbulbOutline, MdOutlineHelpOutline, MdOutlineVolumeUp } from "react-icons/md";
-import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
-import ExplainModal from "./ExplainModal";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
+import { IMessage, MessageOrigin, MessageStatus } from "../../types";
+import ExplainModal from "./ExplainModal";
+import MessageBox from "./MessageBox";
 
 interface MessageViewProps {
     message: IMessage;
@@ -15,10 +14,6 @@ export default function MessageView({ message }: MessageViewProps) {
     const title = isAssistant ? 'Assistant:' : 'You:';
 
     const onPronunciation = () => {
-        window.alert('TODO');
-    }
-
-    const onExplain = () => {
         window.alert('TODO');
     }
 
@@ -44,7 +39,7 @@ export default function MessageView({ message }: MessageViewProps) {
                     </HStack>
                 }
             </Flex>
-            <Box>
+            <Box whiteSpace='pre-line'>
                 {message.content}
                 {isPending && <DefaultBlinkingCursor />}
             </Box>

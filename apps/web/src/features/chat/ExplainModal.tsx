@@ -70,7 +70,7 @@ function ExplainMessageStreamView({ messageId }: ExplainMessageStreamViewProps) 
 
     return (
         <Box w='100%' h='100%'>
-            <Box>
+            <Box whiteSpace='pre-line'>
                 {explanation?.content || content}
                 {!explanation && <DefaultBlinkingCursor />}
             </Box>
