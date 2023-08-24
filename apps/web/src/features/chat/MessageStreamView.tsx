@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useUserSession } from "../../context/UserSession";
-import { IMessage, MessageStatus } from "../../types";
+import { IConversation, IMessage, MessageStatus } from "../../types";
 import MessageView from "./MessageView";
 
 interface MessageStreamViewProps {
     message: IMessage;
+    conversation: IConversation;
     onAdjustScroll: () => void;
 }
-export default function MessageStreamView({ message, onAdjustScroll }: MessageStreamViewProps) {
+export default function MessageStreamView({ message, conversation, onAdjustScroll }: MessageStreamViewProps) {
 
     const { client } = useUserSession();
     const [content, setContent] = useState<string>('');
@@ -41,5 +42,5 @@ export default function MessageStreamView({ message, onAdjustScroll }: MessageSt
         status: MessageStatus.pending
     }
 
-    return <MessageView message={actualMessage} />
+    return <MessageView message={actualMessage} conversation={conversation} />
 }

@@ -4,23 +4,23 @@ import { MdSend } from "react-icons/md";
 import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
-import { IMessage, MessageOrigin, MessageStatus } from "../../types";
+import { IConversation, IMessage } from "../../types";
 import MessagesView from "./MessagesView";
 
 
 
 interface TutorChatProps {
-    conversationId: string;
+    conversation: IConversation;
 }
-export default function TutorChat({ conversationId }: TutorChatProps) {
+export default function TutorChat({ conversation }: TutorChatProps) {
     const toast = useToast({ isClosable: true, duration: 90000 });
     const { client } = useUserSession();
 
     const { data: messages, setData, error } = useFetch<IMessage[]>(() => {
-        return client.get(`/conversations/${conversationId}/messages`)
+        return client.get(`/conversations/${conversation.id}/messages`)
     }, {
         defaultValue: [],
-        deps: [conversationId]
+        deps: [conversation.id]
     });
 
 
@@ -45,7 +45,7 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
         // }, 3000);
         client.post('/messages', {
             payload: {
-                conversation: conversationId,
+                conversation: conversation.id,
                 content: content,
                 stream: true
             }
@@ -66,7 +66,7 @@ export default function TutorChat({ conversationId }: TutorChatProps) {
 
     return (
         <Box w='100%' position='relative'>
-            <MessagesView messages={messages || []} />
+            <MessagesView messages={messages || []} conversation={conversation} />
             <ChatFooter onSubmit={onSubmit} />
         </Box>
     )

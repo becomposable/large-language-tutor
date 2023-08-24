@@ -1,0 +1,9 @@
+span.jp-word {
+    cursor: pointer;
+}
+
+span.jp-word:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    color: #0044cc;
+}
