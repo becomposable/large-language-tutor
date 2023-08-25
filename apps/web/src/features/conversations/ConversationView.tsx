@@ -32,7 +32,7 @@ export default function ConversationView({ conversationId }: ConversationViewPro
                 </Heading>
                 <Box>Language: <b>{conversation?.study_language}</b></Box>
             </Flex>
-            <TutorChat conversationId={conversationId} />
+            {conversation && <TutorChat conversation={conversation} />}
         </Box >
     )
 

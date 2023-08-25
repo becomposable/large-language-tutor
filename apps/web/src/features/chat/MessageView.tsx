@@ -1,15 +1,18 @@
 import { Avatar, Box, Flex, HStack, Heading } from "@chakra-ui/react";
 import { MdOutlineVolumeUp } from "react-icons/md";
+import JpText from "../../components/JpText";
 import StyledIconButton from "../../components/StyledIconButton";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
-import { IMessage, MessageOrigin, MessageStatus } from "../../types";
+import { IConversation, IMessage, MessageOrigin, MessageStatus } from "../../types";
 import ExplainModal from "./ExplainModal";
 import MessageBox from "./MessageBox";
 
+
 interface MessageViewProps {
     message: IMessage;
+    conversation: IConversation;
 }
-export default function MessageView({ message }: MessageViewProps) {
+export default function MessageView({ message, conversation }: MessageViewProps) {
     const isAssistant = message.origin === MessageOrigin.assistant;
     const title = isAssistant ? 'Assistant:' : 'You:';
 
@@ -24,6 +27,8 @@ export default function MessageView({ message }: MessageViewProps) {
 
     const isActive = message.status === MessageStatus.active;
     const isPending = message.status === MessageStatus.pending;
+
+    const isJp = conversation.study_language === 'Japanese';
 
     return (
         <MessageBox>
@@ -40,10 +45,17 @@ export default function MessageView({ message }: MessageViewProps) {
                 }
             </Flex>
             <Box whiteSpace='pre-line'>
-                {message.content}
+                {isJp ? <JpText text={message.content} /> : <MessageText text={message.content} />}
                 {isPending && <DefaultBlinkingCursor />}
             </Box>
         </MessageBox>
     )
 }
 
+
+interface MessageTextProps {
+    text: string;
+}
+function MessageText({ text }: MessageTextProps) {
+    return <span>{text}</span>
+}

@@ -1,20 +1,29 @@
 import { Box, Flex } from "@chakra-ui/react";
-import { useEffect, useRef } from "react";
-import { IMessage, MessageStatus } from "../../types";
+import { useEffect, useRef, useState } from "react";
+import { IConversation, IMessage, MessageStatus } from "../../types";
 import MessageStreamView from "./MessageStreamView";
 import MessageView from "./MessageView";
 
 interface MessagesViewProps {
     messages: IMessage[];
+    conversation: IConversation;
 }
-export default function MessagesView({ messages }: MessagesViewProps) {
+export default function MessagesView({ messages, conversation }: MessagesViewProps) {
+    const [isFirstRender, setIsFirstRender] = useState<boolean>(true);
     const scrollTargetRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
-        onAdjustScroll();
+        if (isFirstRender) {
+            // hack to avoid smooth scroll on first render
+            window.setTimeout(() => {
+                setIsFirstRender(false);
+            }, 1000);
+        }
+        onAdjustScroll(isFirstRender);
     }, [messages]);
 
-    const onAdjustScroll = () => {
-        scrollTargetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    const onAdjustScroll = (isFirstRender = false) => {
+        scrollTargetRef.current?.scrollIntoView({ behavior: isFirstRender ? 'instant' : 'smooth', block: 'end' });
     }
 
     return (
@@ -23,9 +32,9 @@ export default function MessagesView({ messages }: MessagesViewProps) {
                 {
                     messages.map(m => {
                         if (m.status === MessageStatus.created) {
-                            return <MessageStreamView key={m.id} message={m} onAdjustScroll={onAdjustScroll} />
+                            return <MessageStreamView key={m.id} message={m} onAdjustScroll={onAdjustScroll} conversation={conversation} />
                         } else {
-                            return <MessageView key={m.id} message={m} />
+                            return <MessageView key={m.id} message={m} conversation={conversation} />
                         }
                     })
                 }

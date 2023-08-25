@@ -1,9 +1,8 @@
-import { Box, Button, Center, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { MdLightbulbOutline } from "react-icons/md";
 import StyledIconButton from "../../components/StyledIconButton";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
-import EllipsisAnim from "../../components/ellipsis-anim/EllipsisAnim";
 import { useUserSession } from "../../context/UserSession";
 import { IExplanation } from "../../types";
 
