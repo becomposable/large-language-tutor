@@ -1,12 +1,12 @@
-import { SyntheticEvent, useEffect, useState } from "react";
-import { IJapaneseWord, tokenizeJapaneseWords } from "../../hooks/kurojomi";
-import "./jp-word.css";
 import { Box, Button, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, UnorderedList, VStack } from "@chakra-ui/react";
+import Kuroshiro from "@language-tutor/kuroshiro";
+import { SyntheticEvent, useEffect, useState } from "react";
+import { IJapaneseWord, IpadicFeatures, tokenizeJapaneseWords } from "../../hooks/kurojomi";
+import "./jp-word.css";
 
 export default function JpText({ text }: { text: string }) {
-    const [words, setWords] = useState<IJapaneseWord[]>([]);
+    const [parseResult, setParseResult] = useState<{ words: IJapaneseWord[], tokens: IpadicFeatures[] }>();
     const [children, setChildren] = useState<JSX.Element[]>();
-    const [showModal, setShowModal] = useState<boolean>(false);
     const [word, setWord] = useState<IJapaneseWord | undefined>(undefined);
 
     const onClick = (ev: SyntheticEvent<HTMLElement>) => {
@@ -17,19 +17,18 @@ export default function JpText({ text }: { text: string }) {
                 ev.stopPropagation();
                 ev.preventDefault();
                 const index = parseInt(dataIndex);
-                const word = words[index];
+                const word = parseResult?.words[index];
                 if (word) {
                     //console.log("Looking at word " + word.text, word)
                     setWord(word);
-                    setShowModal(true);
                 }
             }
         }
     }
 
     useEffect(() => {
-        tokenizeJapaneseWords(text).then(({ words }) => {
-            const children = words.map((word, i) => {
+        tokenizeJapaneseWords(text).then((result) => {
+            const children = result.words.map((word, i) => {
                 if (word.unknown) {
                     return <span key={i} data-index={i}>{word.text}</span>
                 } else {
@@ -41,7 +40,7 @@ export default function JpText({ text }: { text: string }) {
                     )
                 }
             });
-            setWords(words);
+            setParseResult(result);
             setChildren(children);
         }
         );
@@ -50,7 +49,7 @@ export default function JpText({ text }: { text: string }) {
     return (
         <>
             {children ? <Box as='span' onClick={onClick}>{children}</Box> : <span>{text}</span>}
-            <JpWordModal word={word} setWord={setWord} showModal={showModal} setShowModal={setShowModal} />
+            <JpWordModal tokens={parseResult ? parseResult.tokens : []} word={word} setWord={setWord} />
         </>
     );
 
@@ -58,15 +57,30 @@ export default function JpText({ text }: { text: string }) {
 
 //make a modal that opens when clicking on a word
 //show the word, the reading, and the definition
-function JpWordModal({ word, setWord, showModal, setShowModal }: { word: IJapaneseWord | undefined, setWord: (word?: IJapaneseWord) => void, showModal: boolean, setShowModal: (show: boolean) => void }) {
+function JpWordModal({ tokens, word, setWord }: {
+    tokens: IpadicFeatures[],
+    word: IJapaneseWord | undefined,
+    setWord: (word?: IJapaneseWord) => void
+}) {
     const jotoba = "https://jotoba.de/api/search/words"
     const query = {
         query: word?.text,
     }
     const [def, setDef] = useState<any>();
+    const [hiragamaText, setHiragamaText] = useState<string>();
+
+    useEffect(() => {
+        if (tokens && tokens.length) {
+            const hiragamaText = new Kuroshiro().convertTokens(tokens, {
+                mode: "normal",
+                to: "hiragana"
+            }).then(setHiragamaText);
+        }
+    }, [tokens]);
 
     useEffect(() => {
         if (!word) return;
+
         //fetch the definition
         //console.log("fetching definition for", word.text)
 
@@ -87,23 +101,21 @@ function JpWordModal({ word, setWord, showModal, setShowModal }: { word: IJapane
     }, [word]);
 
     const onClose = () => {
-        setShowModal(false);
         setWord(undefined);
     };
-    const isOpen = showModal;
 
-    return (showModal && word && def?.words) && (
-        <Modal isOpen={isOpen} onClose={onClose}>
+    return word && (
+        <Modal isOpen={!!word} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{word.text}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <VStack align='start'>
-                        <Box>Reading: {def.words[0].reading?.kana ?? word.text}</Box>
+                        <Box>Reading: {hiragamaText} ({def?.words[0].reading?.kana ?? word.text})</Box>
                         <Box>Definition:
                             <UnorderedList>
-                                {def.words[0].senses.map((sense: any, index: number) => {
+                                {def?.words[0].senses.map((sense: any, index: number) => {
                                     return <ListItem key={index}>{sense.glosses.join(', ')}</ListItem>
                                 })}
                             </UnorderedList>

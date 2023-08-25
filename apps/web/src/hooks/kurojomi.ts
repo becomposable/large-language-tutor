@@ -65,7 +65,7 @@ function loadKuromoji(dictPath = "/kuromoji/dict/") {
 }
 
 // TOSO this is only working in browsers
-export function getKuromojiTokizer() {
+export function getKuromojiTokenizer() {
     if (!tokenizer) {
         tokenizer = loadKuromoji("https://takuyaa.github.io/kuromoji.js/demo/kuromoji/dict/");
     }
@@ -99,7 +99,7 @@ export interface IJapaneseWord {
 
 
 export async function tokenizeJapaneseWords(text: string) {
-    const tokenizer = await getKuromojiTokizer();
+    const tokenizer = await getKuromojiTokenizer();
     const tokens = tokenizer.tokenize(text);
     const words: IJapaneseWord[] = [];
     let lastWord: IJapaneseWord | undefined;

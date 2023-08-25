@@ -11,6 +11,7 @@
     "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'"
   },
   "dependencies": {
+    "@language-tutor/kuroshiro": "*",
     "@chakra-ui/icons": "^2.1.0",
     "@chakra-ui/react": "^2.8.0",
     "@emotion/react": "^11.11.1",
