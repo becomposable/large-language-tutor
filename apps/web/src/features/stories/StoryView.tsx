@@ -3,6 +3,7 @@ import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
 import { IStory } from "../../types";
+import JpText from "../../components/JpText";
 
 
 interface StoryViewProps {
@@ -29,13 +30,19 @@ export default function StoryView({ storyId }: StoryViewProps) {
                 <Box>Language: <b>{story.language}</b></Box>
             </Flex>
             <Flex>
-                <Box>{renderTextToHtml(story.content)}</Box>
+                <Box>{renderTextToHtml(story.content, story.language)}</Box>
             </Flex>
         </VStack >
     )
 
 }
 
-function renderTextToHtml(text: string) {
-    return text.split('\n').map((line, i) => <Text padding={1} key={i}>{line}</Text>)
+function renderTextToHtml(text: string, language: string) {
+    return text.split('\n').map((line, i) => {
+    return (
+        (language === 'JP' || language === 'JA') ?
+            <Text padding={1} key={i}><JpText text={line} /></Text>
+        :   <Text padding={1} key={i}>{line}</Text>
+    )
+})
 }

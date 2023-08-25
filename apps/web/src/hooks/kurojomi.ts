@@ -83,6 +83,21 @@ export interface IJapaneseWord {
 //助動詞: auxiliary verb
 //動詞: verb
 
+/**
+ * POS details
+ * 名詞: noun
+ * 
+ * 
+ * POS Details
+ * 数: number
+ * 接尾: suffix
+ * 助数詞: counter
+ * 
+ */
+
+
+
+
 export async function tokenizeJapaneseWords(text: string) {
     const tokenizer = await useKuromoji();
     const tokens = tokenizer.tokenize(text);
@@ -104,6 +119,17 @@ export async function tokenizeJapaneseWords(text: string) {
                 lastWord = { tokens: [token], text: token.surface_form };
                 words.push(lastWord);
             }
+        } else if (token.pos_detail_1 === "接尾") {
+        //if current is a suffix
+            if (lastWord) {
+                lastWord.text += token.surface_form;
+                lastWord.tokens.push(token);
+            } else {
+                console.warn('Warning: token.pos is empty but no previous token found');
+                lastWord = { tokens: [token], text: token.surface_form };
+                words.push(lastWord);
+            }
+
         } else {
             lastWord = { tokens: [token], text: token.surface_form };
             lastToken = token;
