@@ -19,7 +19,7 @@ export default function JpText({ text }: { text: string }) {
                 const index = parseInt(dataIndex);
                 const word = words[index];
                 if (word) {
-                    console.log("word", word)
+                    console.log("Looking at word " + word.text, word)
                     setWord(word);
                     setShowModal(true);
                 }
