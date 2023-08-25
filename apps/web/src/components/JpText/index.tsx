@@ -7,7 +7,7 @@ export default function JpText({ text }: { text: string }) {
     const [words, setWords] = useState<IJapaneseWord[]>([]);
     const [children, setChildren] = useState<JSX.Element[]>();
     const [showModal, setShowModal] = useState<boolean>(false);
-    const [word, setWord] = useState<IJapaneseWord|undefined>(undefined);
+    const [word, setWord] = useState<IJapaneseWord | undefined>(undefined);
 
     const onClick = (ev: SyntheticEvent<HTMLElement>) => {
         const el = ev.target as HTMLElement;
@@ -19,7 +19,7 @@ export default function JpText({ text }: { text: string }) {
                 const index = parseInt(dataIndex);
                 const word = words[index];
                 if (word) {
-                    console.log("Looking at word " + word.text, word)
+                    //console.log("Looking at word " + word.text, word)
                     setWord(word);
                     setShowModal(true);
                 }
@@ -49,8 +49,8 @@ export default function JpText({ text }: { text: string }) {
 
     return (
         <>
-        {children ? <Box as='span' onClick={onClick}>{children}</Box> : <span>{text}</span>}
-        <JpWordModal word={word} setWord={setWord} showModal={showModal} setShowModal={setShowModal} />
+            {children ? <Box as='span' onClick={onClick}>{children}</Box> : <span>{text}</span>}
+            <JpWordModal word={word} setWord={setWord} showModal={showModal} setShowModal={setShowModal} />
         </>
     );
 
@@ -58,7 +58,7 @@ export default function JpText({ text }: { text: string }) {
 
 //make a modal that opens when clicking on a word
 //show the word, the reading, and the definition
-function JpWordModal({word, setWord, showModal, setShowModal}: {word: IJapaneseWord | undefined, setWord: (word?: IJapaneseWord) => void, showModal: boolean, setShowModal: (show: boolean) => void}) {
+function JpWordModal({ word, setWord, showModal, setShowModal }: { word: IJapaneseWord | undefined, setWord: (word?: IJapaneseWord) => void, showModal: boolean, setShowModal: (show: boolean) => void }) {
     const jotoba = "https://jotoba.de/api/search/words"
     const query = {
         query: word?.text,
@@ -68,7 +68,7 @@ function JpWordModal({word, setWord, showModal, setShowModal}: {word: IJapaneseW
     useEffect(() => {
         if (!word) return;
         //fetch the definition
-        console.log("fetching definition for", word.text)
+        //console.log("fetching definition for", word.text)
 
         fetch(jotoba, {
             method: "POST",
@@ -78,12 +78,12 @@ function JpWordModal({word, setWord, showModal, setShowModal}: {word: IJapaneseW
             body: JSON.stringify(query)
         }).then(res => {
             res.json().then(json => {
-                console.log("json", json)
+                //console.log("json", json)
                 setDef(json)
             })
         }).catch(err => {
-            console.log("err", err)
-            });
+            console.error("Failed to fetch definition", err)
+        });
     }, [word]);
 
     const onClose = () => {
@@ -94,31 +94,31 @@ function JpWordModal({word, setWord, showModal, setShowModal}: {word: IJapaneseW
 
     return (showModal && word && def?.words) && (
         <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{word.text}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack>
-                <Box>Reading: {def.words[0].reading?.kana ?? word.text}</Box>
-                <Box>Definition:
-                    <UnorderedList>
-                        {def.words[0].senses.map((sense: any) => {
-                            return <ListItem>{sense.glosses.join(', ')}</ListItem>
-                        })}
-                    </UnorderedList>
-                </Box>
-            </VStack>
-          </ModalBody>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>{word.text}</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <VStack align='start'>
+                        <Box>Reading: {def.words[0].reading?.kana ?? word.text}</Box>
+                        <Box>Definition:
+                            <UnorderedList>
+                                {def.words[0].senses.map((sense: any, index: number) => {
+                                    return <ListItem key={index}>{sense.glosses.join(', ')}</ListItem>
+                                })}
+                            </UnorderedList>
+                        </Box>
+                    </VStack>
+                </ModalBody>
 
-          <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
-              Close
-            </Button>
-            <Button variant='ghost'>Say it</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+                <ModalFooter>
+                    <Button colorScheme='blue' mr={3} onClick={onClose}>
+                        Close
+                    </Button>
+                    <Button variant='ghost'>Say it</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
     )
 
 }

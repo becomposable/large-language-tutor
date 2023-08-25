@@ -1,5 +1,5 @@
 import { Box, BoxProps, CloseButton, Flex, FlexProps, Icon, Text } from "@chakra-ui/react"
-import { SyntheticEvent } from "react"
+import React, { SyntheticEvent } from "react"
 import { IconType } from "react-icons"
 import { BsBodyText, BsChatText } from "react-icons/bs"
 import { FiHome, FiSettings } from "react-icons/fi"
@@ -24,13 +24,16 @@ const LinkItems: Array<LinkItemProps> = [
         name: 'Stories', icon: BsBodyText, href: '/stories',
         action: <CreateConversationModal />
     },
-    {
-        name: 'Settings', icon: FiSettings, href: '/settings'
-    },
+    // {
+    //     name: 'Settings', icon: FiSettings, href: '/settings'
+    // },
     // { name: 'Favourites', icon: FiStar },
     // { name: 'Settings', icon: FiSettings },
 ]
 
+const SettingsLink = {
+    name: 'Settings', icon: FiSettings, href: '/settings'
+}
 
 interface NavItemProps extends FlexProps {
     item: LinkItemProps
@@ -53,17 +56,26 @@ export default function SidebarContent({ onClose, ...rest }: SidebarProps) {
             pos="fixed"
             h="full"
             {...rest}>
-            <Flex h="20" alignItems="center" mx="4" justifyContent="space-between">
-                <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-                    Lang Tutor
-                </Text>
-                <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+
+            <Flex h='100%' direction='column'>
+                <Flex h="20" alignItems="center" mx="4" justifyContent="space-between">
+                    <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
+                        Lang Tutor
+                    </Text>
+                    <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
+                </Flex>
+
+                {LinkItems.map((link) => (
+                    <NavItem key={link.name} item={link}>
+                        {link.name}
+                    </NavItem>
+                ))}
+                <Box mt='auto' pb='8'>
+                    <NavItem key={SettingsLink.name} item={SettingsLink}>
+                        {SettingsLink.name}
+                    </NavItem>
+                </Box>
             </Flex>
-            {LinkItems.map((link) => (
-                <NavItem key={link.name} item={link}>
-                    {link.name}
-                </NavItem>
-            ))}
         </Box>
     )
 }

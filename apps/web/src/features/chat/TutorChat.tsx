@@ -121,7 +121,8 @@ function ChatFooter({ onSubmit }: ChatFooterProps) {
         <Flex style={style} ref={panelRef} position='fixed'
             h='8rem' px='10' py='10' align='center' justify='center'
             sx={{
-                backgroundImage: "linear-gradient(180deg,hsla(0,0%,100%,0) 13.94%,#fff 54.73%)"
+                backgroundImage: "linear-gradient(180deg,hsla(0,0%,100%,0),#fff 40%)"
+                //backgroundImage: "linear-gradient(180deg,hsla(0,0%,100%,0) 13.94%,#fff 54.73%)"
             }}
         >
             <Box as='form' onSubmit={_onSubmit} noValidate autoComplete="off" w='90%'>

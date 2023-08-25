@@ -12,7 +12,9 @@ export enum MessageStatus {
 
 export enum Languages {
     Japanese = "Japanese",
-    English = "English"
+    English = "English",
+    French = "French",
+    Romanian = "Romanian"
 }
 
 export interface IMessage {

@@ -65,7 +65,7 @@ function loadKuromoji(dictPath = "/kuromoji/dict/") {
 }
 
 // TOSO this is only working in browsers
-export function useKuromoji() {
+export function getKuromojiTokizer() {
     if (!tokenizer) {
         tokenizer = loadKuromoji("https://takuyaa.github.io/kuromoji.js/demo/kuromoji/dict/");
     }
@@ -99,7 +99,7 @@ export interface IJapaneseWord {
 
 
 export async function tokenizeJapaneseWords(text: string) {
-    const tokenizer = await useKuromoji();
+    const tokenizer = await getKuromojiTokizer();
     const tokens = tokenizer.tokenize(text);
     const words: IJapaneseWord[] = [];
     let lastWord: IJapaneseWord | undefined;
@@ -109,8 +109,8 @@ export async function tokenizeJapaneseWords(text: string) {
         if (token.word_type === 'UNKNOWN') {
             lastWord = { tokens: [token], text: token.surface_form, unknown: true };
             words.push(lastWord);
-        } else if (!token.pos || token.pos_detail_1 === '接続助詞' || (token.pos === '助動詞' && lastToken?.pos === '動詞')) { 
-        //if current token is conjuctive particule or auxiliary verb 
+        } else if (!token.pos || token.pos_detail_1 === '接続助詞' || (token.pos === '助動詞' && lastToken?.pos === '動詞')) {
+            //if current token is conjuctive particule or auxiliary verb 
             if (lastWord) {
                 lastWord.text += token.surface_form;
                 lastWord.tokens.push(token);
@@ -120,7 +120,7 @@ export async function tokenizeJapaneseWords(text: string) {
                 words.push(lastWord);
             }
         } else if (token.pos_detail_1 === "接尾") {
-        //if current is a suffix
+            //if current is a suffix
             if (lastWord) {
                 lastWord.text += token.surface_form;
                 lastWord.tokens.push(token);

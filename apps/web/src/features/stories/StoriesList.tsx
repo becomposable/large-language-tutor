@@ -7,6 +7,7 @@ import StyledIconButton from "../../components/StyledIconButton";
 import { useUserSession } from "../../context/UserSession";
 import useFetchOnce from "../../hooks/useFetch";
 import { IStory } from "../../types";
+import StyledLink from "../../components/StyledLink";
 
 export default function StoriesList() {
     const { client } = useUserSession();
@@ -35,10 +36,10 @@ function StoryItem({ story }: StoryItemProps) {
     return (
         <Flex p='4' borderBottom='1px solid' borderBottomColor='gray.100' w='100%'
             direction={"column"} verticalAlign={'top'}>
-            <Flex justify='space-between'><Link to={`/stories/${story.id}`}>
+            <Flex justify='space-between'><StyledLink to={`/stories/${story.id}`}>
                 [{story.language}] {story.title} created on {dayjs(story.created).format('M D')}
-            </Link>
-            <StyledIconButton ml='auto' aria-label='delete' hoverBg='red.100' icon={<DeleteIcon />} />
+            </StyledLink>
+                <StyledIconButton ml='auto' aria-label='delete' hoverBg='red.100' icon={<DeleteIcon />} />
             </Flex>
             <Flex fontSize={'sm'}>
                 <Text>{story.level} - {story.style} - {story.topic}</Text>
