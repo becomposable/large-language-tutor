@@ -5,7 +5,7 @@ import { IJapaneseWord, IpadicFeatures, tokenizeJapaneseWords } from "../../hook
 import "./jp-word.css";
 
 export default function JpText({ text }: { text: string }) {
-    const [parseResult, setParseResult] = useState<{ words: IJapaneseWord[], tokens: IpadicFeatures[] }>();
+    const [words, setWords] = useState<IJapaneseWord[]>([]);
     const [children, setChildren] = useState<JSX.Element[]>();
     const [word, setWord] = useState<IJapaneseWord | undefined>(undefined);
 
@@ -17,7 +17,7 @@ export default function JpText({ text }: { text: string }) {
                 ev.stopPropagation();
                 ev.preventDefault();
                 const index = parseInt(dataIndex);
-                const word = parseResult?.words[index];
+                const word = words[index];
                 if (word) {
                     //console.log("Looking at word " + word.text, word)
                     setWord(word);
@@ -27,8 +27,8 @@ export default function JpText({ text }: { text: string }) {
     }
 
     useEffect(() => {
-        tokenizeJapaneseWords(text).then((result) => {
-            const children = result.words.map((word, i) => {
+        tokenizeJapaneseWords(text).then(({ words }) => {
+            const children = words.map((word, i) => {
                 if (word.unknown) {
                     return <span key={i} data-index={i}>{word.text}</span>
                 } else {
@@ -40,7 +40,7 @@ export default function JpText({ text }: { text: string }) {
                     )
                 }
             });
-            setParseResult(result);
+            setWords(words);
             setChildren(children);
         }
         );
@@ -49,7 +49,7 @@ export default function JpText({ text }: { text: string }) {
     return (
         <>
             {children ? <Box as='span' onClick={onClick}>{children}</Box> : <span>{text}</span>}
-            <JpWordModal tokens={parseResult ? parseResult.tokens : []} word={word} setWord={setWord} />
+            <JpWordModal word={word} setWord={setWord} />
         </>
     );
 
@@ -57,8 +57,7 @@ export default function JpText({ text }: { text: string }) {
 
 //make a modal that opens when clicking on a word
 //show the word, the reading, and the definition
-function JpWordModal({ tokens, word, setWord }: {
-    tokens: IpadicFeatures[],
+function JpWordModal({ word, setWord }: {
     word: IJapaneseWord | undefined,
     setWord: (word?: IJapaneseWord) => void
 }) {
@@ -70,16 +69,15 @@ function JpWordModal({ tokens, word, setWord }: {
     const [hiragamaText, setHiragamaText] = useState<string>();
 
     useEffect(() => {
+        if (!word) return;
+
+        const tokens = word.tokens;
         if (tokens && tokens.length) {
-            const hiragamaText = new Kuroshiro().convertTokens(tokens, {
+            new Kuroshiro().convertTokens(tokens, {
                 mode: "normal",
                 to: "hiragana"
             }).then(setHiragamaText);
         }
-    }, [tokens]);
-
-    useEffect(() => {
-        if (!word) return;
 
         //fetch the definition
         //console.log("fetching definition for", word.text)
