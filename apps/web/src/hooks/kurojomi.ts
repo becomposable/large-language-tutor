@@ -78,16 +78,24 @@ export interface IJapaneseWord {
     tokens: IpadicFeatures[];
     unknown?: boolean;
 }
+
+//接続助詞': conjuctive particule
+//助動詞: auxiliary verb
+//動詞: verb
+
 export async function tokenizeJapaneseWords(text: string) {
     const tokenizer = await useKuromoji();
     const tokens = tokenizer.tokenize(text);
     const words: IJapaneseWord[] = [];
     let lastWord: IJapaneseWord | undefined;
+    let lastToken: IpadicFeatures | undefined;
+
     for (const token of tokens) {
         if (token.word_type === 'UNKNOWN') {
             lastWord = { tokens: [token], text: token.surface_form, unknown: true };
             words.push(lastWord);
-        } else if (!token.pos || token.pos_detail_1 === '接続助詞') {
+        } else if (!token.pos || token.pos_detail_1 === '接続助詞' || (token.pos === '助動詞' && lastToken?.pos === '動詞')) { 
+        //if current token is conjuctive particule or auxiliary verb 
             if (lastWord) {
                 lastWord.text += token.surface_form;
                 lastWord.tokens.push(token);
@@ -98,6 +106,7 @@ export async function tokenizeJapaneseWords(text: string) {
             }
         } else {
             lastWord = { tokens: [token], text: token.surface_form };
+            lastToken = token;
             words.push(lastWord);
         }
     }
