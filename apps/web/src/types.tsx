@@ -34,6 +34,17 @@ export interface IConversation {
     id: string
 }
 
+export interface IStory {
+    language: string,
+    created: string,
+    id: string,
+    content: string,
+    title: string,
+    style?: string,
+    level?: string,
+    topic?: string,
+}
+
 export interface IExplanation {
     readonly id: string,
     created: string,

@@ -29,7 +29,7 @@ export default function ConversationsView() {
 
 
 interface ConversationItemProps {
-    conversation: any;
+    conversation: IConversation;
 }
 function ConversationItem({ conversation }: ConversationItemProps) {
     return (

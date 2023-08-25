@@ -1,7 +1,7 @@
 import { Box, BoxProps, CloseButton, Flex, FlexProps, Icon, Text } from "@chakra-ui/react"
 import { SyntheticEvent } from "react"
 import { IconType } from "react-icons"
-import { BsChatText } from "react-icons/bs"
+import { BsBodyText, BsChatText } from "react-icons/bs"
 import { FiHome, FiSettings } from "react-icons/fi"
 import { useNavigate } from "react-router"
 import CreateConversationModal from "../features/conversations/CreateConversationModal"
@@ -18,6 +18,10 @@ const LinkItems: Array<LinkItemProps> = [
     { name: 'Home', icon: FiHome, href: '/' },
     {
         name: 'Conversations', icon: BsChatText, href: '/conversations',
+        action: <CreateConversationModal />
+    },
+    {
+        name: 'Stories', icon: BsBodyText, href: '/stories',
         action: <CreateConversationModal />
     },
     {

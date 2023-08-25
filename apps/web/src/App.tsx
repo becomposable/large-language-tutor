@@ -3,8 +3,10 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import './App.css'
 import { UserSessionProvider } from './context/UserSession'
 import ConversationPage from './pages/ConversationPage'
-import DashboardPage from './pages/DashboardPage'
 import ConversationsPage from './pages/ConversationsPage'
+import DashboardPage from './pages/DashboardPage'
+import StoriesPage from './pages/StoriesPage'
+import StoryPage from './pages/StoryPage'
 
 
 const router = createBrowserRouter([
@@ -19,6 +21,14 @@ const router = createBrowserRouter([
     {
         path: '/conversations',
         Component: ConversationsPage,
+    },
+    {
+        path: '/stories',
+        Component: StoriesPage,
+    },
+    {
+        path: '/stories/:storyId',
+        Component: StoryPage,
     }
 ]);
 

@@ -25,10 +25,21 @@ export class StoriesResource extends Resource {
 
         const storyRequest = new StoryGenerator(studyLanguage, topic, level, style);
         const result = await storyRequest.execute();
+        const parsed = result.choices[0]?.message.content?.split('\n');
+        const title = parsed?.shift();
+        const content = parsed?.join('\n');
+
+        if (!title || !content) {
+            ctx.throw(500, `Failed to get title and content from story`);
+        }
 
         const story = await Story.create({
-            content: result.choices[0]?.message.content ?? '',
+            content: content,
+            title: title,
             language: studyLanguage,
+            topic: topic,
+            level: level,
+            style: style,
         });
 
         ctx.body = jsonDoc(story);
@@ -123,7 +134,8 @@ class StoryGenerator extends CompletionBase<StoryGenerator> {
 
         const length = this.level === 'advanced' ? 700 : 250;
 
-        return `The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
+        return `You are an excellent story writer, capable of many styles and topics.
+        The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         The user want to train his reading and comprehension skills or just have fun.
         The user is estimated to be at a ${this.level} level.
         Please write a story (about ${length} words) to help the user practice.
@@ -131,6 +143,7 @@ class StoryGenerator extends CompletionBase<StoryGenerator> {
         ${this.level ? `The story should be using a ${this.level} language level.` : ''}
         ${this.style ? `The story should be writted in the following style: ${this.style}.` : ''}
         Directly output the story, no additional text as it will be parsed by a machine.
+        The first line must be the title of the story, the rest must be the story itself.
         `;
     }
 
