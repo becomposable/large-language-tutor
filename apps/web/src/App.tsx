@@ -1,13 +1,13 @@
 import { Box, ChakraProvider } from '@chakra-ui/react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { UserSessionProvider } from './context/UserSession'
+import { getKuromojiTokenizer } from './hooks/kurojomi'
+import useOnWindowLoad from './hooks/useOnWindowLoad'
 import ConversationPage from './pages/ConversationPage'
 import ConversationsPage from './pages/ConversationsPage'
 import DashboardPage from './pages/DashboardPage'
 import StoriesPage from './pages/StoriesPage'
 import StoryPage from './pages/StoryPage'
-import useOnWindowLoad from './hooks/useOnWindowLoad'
-import { getKuromojiTokizer } from './hooks/kurojomi'
 
 
 const router = createBrowserRouter([
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
 function App() {
     useOnWindowLoad(() => {
         // force kuromoji dictionaires to load on window load
-        getKuromojiTokizer();
+        getKuromojiTokenizer();
     });
 
     return (
