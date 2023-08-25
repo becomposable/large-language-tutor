@@ -1,8 +1,8 @@
-import { Box, Flex, HStack, Heading, Text, VStack } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, VStack } from "@chakra-ui/react";
+import ErrorAlert from "../../components/ErrorAlert";
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
 import { IStory } from "../../types";
-import ErrorAlert from "../../components/ErrorAlert";
 
 
 interface StoryViewProps {

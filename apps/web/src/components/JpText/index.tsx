@@ -1,11 +1,13 @@
 import { SyntheticEvent, useEffect, useState } from "react";
 import { IJapaneseWord, tokenizeJapaneseWords } from "../../hooks/kurojomi";
 import "./jp-word.css";
-import { Box } from "@chakra-ui/react";
+import { Box, Button, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, UnorderedList, VStack } from "@chakra-ui/react";
 
 export default function JpText({ text }: { text: string }) {
     const [words, setWords] = useState<IJapaneseWord[]>([]);
     const [children, setChildren] = useState<JSX.Element[]>();
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [word, setWord] = useState<IJapaneseWord|undefined>(undefined);
 
     const onClick = (ev: SyntheticEvent<HTMLElement>) => {
         const el = ev.target as HTMLElement;
@@ -17,7 +19,9 @@ export default function JpText({ text }: { text: string }) {
                 const index = parseInt(dataIndex);
                 const word = words[index];
                 if (word) {
-                    window.alert(`TODO: ${word.text}`);
+                    console.log("word", word)
+                    setWord(word);
+                    setShowModal(true);
                 }
             }
         }
@@ -29,7 +33,12 @@ export default function JpText({ text }: { text: string }) {
                 if (word.unknown) {
                     return <span key={i} data-index={i}>{word.text}</span>
                 } else {
-                    return <span className='jp-word' data-index={i} key={i}>{word.text}</span>
+                    return (
+                        <span
+                            className='jp-word' data-index={i} key={i}
+                            title={word.tokens.map(t => t.reading).join('')}>{word.text}
+                        </span>
+                    )
                 }
             });
             setWords(words);
@@ -38,6 +47,78 @@ export default function JpText({ text }: { text: string }) {
         );
     }, [text]);
 
-    return children ? <Box as='span' onClick={onClick}>{children}</Box> : <span>{text}</span>;
+    return (
+        <>
+        {children ? <Box as='span' onClick={onClick}>{children}</Box> : <span>{text}</span>}
+        <JpWordModal word={word} setWord={setWord} showModal={showModal} setShowModal={setShowModal} />
+        </>
+    );
+
+}
+
+//make a modal that opens when clicking on a word
+//show the word, the reading, and the definition
+function JpWordModal({word, setWord, showModal, setShowModal}: {word: IJapaneseWord | undefined, setWord: (word?: IJapaneseWord) => void, showModal: boolean, setShowModal: (show: boolean) => void}) {
+    const jotoba = "https://jotoba.de/api/search/words"
+    const query = {
+        query: word?.text,
+    }
+    const [def, setDef] = useState<any>();
+
+    useEffect(() => {
+        if (!word) return;
+        //fetch the definition
+        console.log("fetching definition for", word.text)
+
+        fetch(jotoba, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(query)
+        }).then(res => {
+            res.json().then(json => {
+                console.log("json", json)
+                setDef(json)
+            })
+        }).catch(err => {
+            console.log("err", err)
+            });
+    }, [word]);
+
+    const onClose = () => {
+        setShowModal(false);
+        setWord(undefined);
+    };
+    const isOpen = showModal;
+
+    return (showModal && word && def?.words) && (
+        <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{word.text}</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack>
+                <Box>Reading: {def.words[0].reading?.kana ?? word.text}</Box>
+                <Box>Definition:
+                    <UnorderedList>
+                        {def.words[0].senses.map((sense: any) => {
+                            return <ListItem>{sense.glosses.join(', ')}</ListItem>
+                        })}
+                    </UnorderedList>
+                </Box>
+            </VStack>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={onClose}>
+              Close
+            </Button>
+            <Button variant='ghost'>Say it</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    )
 
 }
