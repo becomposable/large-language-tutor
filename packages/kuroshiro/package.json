@@ -1,0 +1,46 @@
+{
+  "name": "@language-tutor/kuroshiro",
+  "version": "1.2.0",
+  "description": "kuroshiro is a Japanese language library for converting Japanese sentence to Hiragana, Katakana or Romaji with furigana and okurigana modes supported.",
+  "main": "lib/index.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "rimraf ./lib && tsc",
+    "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "rimraf": "^5.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hexenq/kuroshiro.git"
+  },
+  "keywords": [
+    "Japanese",
+    "language",
+    "convert",
+    "converter",
+    "kanji",
+    "hiragana",
+    "katakana",
+    "kana",
+    "romaji",
+    "furigana",
+    "okurigana",
+    "library",
+    "utility",
+    "tool",
+    "hepburn"
+  ],
+  "author": {
+    "name": "Hexen Qi",
+    "email": "hexenq@gmail.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hexenq/kuroshiro/issues"
+  },
+  "homepage": "https://github.com/hexenq/kuroshiro"
+}
