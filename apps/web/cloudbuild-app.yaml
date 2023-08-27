@@ -1,0 +1,60 @@
+# Build and deploy the Lang Tutor API
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args: ['-c', 'docker pull us.gcr.io/$PROJECT_ID/lang-tutor-app:latest || exit 0']
+    id: 'pull-cache'
+  - name: 'gcr.io/cloud-builders/docker'
+    env: [IMAGETAG=$SHORT_SHA, ENVIRONMENT=$_ENVIRONMENT, PROJECTID=$PROJECT_ID, SENTRY_DSN=$_SENTRY_DSN, SENTRY_AUTH_TOKEN=$_SENTRY_AUTH_TOKEN] #only way to pass build arg with kaniko
+    args:
+      - 'build'
+      - '.'
+      - '--file=apps/server/Dockerfile'
+      - '--tag=us.gcr.io/$PROJECT_ID/lang-tutor-app:$SHORT_SHA'
+      - '--tag=us.gcr.io/$PROJECT_ID/lang-tutor-app:latest'
+      - --build-arg=IMAGETAG #use this to pass arguments to the docker build
+      - --build-arg=ENVIRONMENT
+      - --build-arg=PROJECTID
+      - --build-arg=REPONAME
+      #- --build-arg=SENTRY_DSN
+      #- --build-arg=SENTRY_AUTH_TOKEN
+      - --network=cloudbuild #necessary for ADC to be available
+      - --cache-from=us.gcr.io/$PROJECT_ID/lang-tutor-app:latest      
+    waitFor: [pull-cache]
+    id: build-app
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'us.gcr.io/$PROJECT_ID/lang-tutor-app'
+    waitFor: [build-app]
+    id: 'push-app'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:alpine'
+    args:
+      - run
+      - deploy
+      - lang-tutor
+      - --cpu=1
+      - --memory=1G
+      - --ingress=internal-and-cloud-load-balancing
+      - --allow-unauthenticated
+      - --min-instances=1
+      - --max-instances=10
+      - '--platform=managed'
+      - '--image=us.gcr.io/$PROJECT_ID/lang-tutor-app:$SHORT_SHA'
+      - '--region=$_DEPLOY_REGION'
+      - '--set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID'
+    id: deploy-app
+    waitFor:
+      - push-app
+    entrypoint: gcloud
+options:
+  machineType: E2_HIGHCPU_8
+  substitutionOption: ALLOW_LOOSE
+substitutions:
+  _SERVICE_NAME: lang-tutor
+  _DEPLOY_REGION: us-central1
+  _GCR_HOSTNAME: us.gcr.io
+tags:
+  - lang-tutor
