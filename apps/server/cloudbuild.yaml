@@ -50,7 +50,7 @@ steps:
       - push-app
     entrypoint: gcloud
 options:
-  machineType: E2_HIGHCPU_8
+#  machineType: E2_HIGHCPU_8
   substitutionOption: ALLOW_LOOSE
 substitutions:
   _SERVICE_NAME: lang-tutor
