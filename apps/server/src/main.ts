@@ -3,7 +3,7 @@ import TutorServer from "./TutorServer.js";
 import { ErrorInfo } from "@koa-stack/server";
 
 const logger = console
-const PORT = 8089;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8089 ;
 
 process.on('uncaughtException', function (err) {
     console.error('Uncaught error!', err.stack);
