@@ -3,7 +3,6 @@ const env = import.meta.env;
 
 const serverUrl = env.VITE_SERVER_URL || "https://lang-tutor-jc6rsiqkva-uc.a.run.app";
 
-console.log('#### VITE ENV is ', env);
 const Env = {
     isProd: !!env.PROD,
     isDev: !!env.DEV,
@@ -14,6 +13,5 @@ const Env = {
     KUROMOJI_DICT: env.VITE_KUROMOJI_DICT || "/kuromoji/dict/",
 }
 
-console.log('!!!!!!! ENV is', Env);
 
 export default Env;
