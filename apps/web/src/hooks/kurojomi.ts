@@ -1,4 +1,4 @@
-//import kuromoji, { IpadicFeatures } from "kuromoji";
+import Env from "../env";
 
 export interface TokenizerBuilder<T> {
     build(callback: (err: Error, tokenizer: Tokenizer<T>) => void): void;
@@ -47,12 +47,12 @@ export type KuromojiFormatter = Formatter<IpadicFeatures>;
 
 let tokenizer: Promise<KuromojiTokenizer> | undefined = undefined;
 
-function loadKuromoji(dictPath = "/kuromoji/dict/") {
+function loadKuromoji(dictPath = Env.KUROMOJI_DICT) {
     tokenizer = new Promise<KuromojiTokenizer>((resolve, reject) => {
         if (!window) throw new Error('This function must be called in browser');
         const kuromoji = (window as any).kuromoji as KuromojiBuilder;
         if (!kuromoji) throw new Error('kurojomi library not loaded');
-        console.log('### loaded kuromoji', kuromoji);
+        console.log('### loaded kuromoji', kuromoji, ' with dict from ', dictPath);
         kuromoji.builder({ dicPath: dictPath }).build(function (err, tokenizer) {
             if (err) {
                 reject(err);
@@ -67,7 +67,8 @@ function loadKuromoji(dictPath = "/kuromoji/dict/") {
 // TOSO this is only working in browsers
 export function getKuromojiTokenizer() {
     if (!tokenizer) {
-        tokenizer = loadKuromoji("https://takuyaa.github.io/kuromoji.js/demo/kuromoji/dict/");
+        //tokenizer = loadKuromoji("https://takuyaa.github.io/kuromoji.js/demo/kuromoji/dict/");
+        tokenizer = loadKuromoji();
     }
     return tokenizer;
 }
