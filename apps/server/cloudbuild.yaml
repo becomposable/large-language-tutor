@@ -37,7 +37,7 @@ steps:
       - lang-tutor
       - --cpu=1
       - --memory=1G
-      - --ingress=internal-and-cloud-load-balancing
+      - --ingress=all #must be set to if load balancer internal-and-cloud-load-balancing
       - --allow-unauthenticated
       - --min-instances=1
       - --max-instances=10
