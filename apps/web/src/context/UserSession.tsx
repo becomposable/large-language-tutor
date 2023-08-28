@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import FetchClient from "../fetch-client";
-import { API_BASE_URL } from "../env";
+import Env from "../env";
 
 export interface IUserSession {
     user: any; //TODO
@@ -8,7 +8,7 @@ export interface IUserSession {
 }
 
 const UserSessionContext = createContext<IUserSession>({
-    user: null, client: new FetchClient(API_BASE_URL)
+    user: null, client: new FetchClient(Env.API_BASE_URL)
 });
 
 interface UserSessionProviderProps {
@@ -17,7 +17,7 @@ interface UserSessionProviderProps {
 export function UserSessionProvider({ children }: UserSessionProviderProps) {
     const [session] = useState<IUserSession>({
         user: null,
-        client: new FetchClient(API_BASE_URL)
+        client: new FetchClient(Env.API_BASE_URL)
     });
     return (
         <UserSessionContext.Provider value={session}>{children}</UserSessionContext.Provider>
