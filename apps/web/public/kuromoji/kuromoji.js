@@ -8116,6 +8116,7 @@ BrowserDictionaryLoader.prototype = Object.create(DictionaryLoader.prototype);
 BrowserDictionaryLoader.prototype.loadArrayBuffer = function (url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
+    xhr.setRequestHeader("Cache-Control", "max-stale, max-age: 2592000"); // Force cache to 30 days
     xhr.responseType = "arraybuffer";
     xhr.onload = function () {
         if (this.status > 0 && this.status !== 200) {
