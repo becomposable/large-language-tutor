@@ -88,8 +88,7 @@ export class ExplainResource extends Resource {
 
         //not streaming, get the thing
         const explainRequest = new ExplainCompletion(conversation, topic, messageId);
-        const result = await explainRequest.execute();
-        const content = result.choices.map(c => c.message.content);
+        const content = await explainRequest.execute();
         explanation.content = content.join(' ');
         explanation.save();
 

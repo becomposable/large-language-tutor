@@ -5,6 +5,7 @@ import ConversationsResource from "./conversations.js";
 import { MessagesResource } from "./messages.js";
 import { ExplainResource } from "./explain.js";
 import { StoriesResource } from "./stories.js";
+import { DictionnaryResource } from "./dictionnary.js";
 
 //TODO put in a shared project
 export interface IUserPayload {
@@ -93,6 +94,7 @@ export default class ApiRoot extends Resource {
         router.mount('/messages', MessagesResource);
         router.mount('/explain', ExplainResource);
         router.mount('/stories', StoriesResource);
+        router.mount('/dictionnary', DictionnaryResource);
     }
 
 

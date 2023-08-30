@@ -1,0 +1,5 @@
+var word, wordLanguage?, userLanguage?
+
+
+GET http://localhost:8089/api/v1/dictionnary/${wordLanguage ?? 'EN'}/${word}/${userLanguage ?? 'FR'}
+Content-Type: application/json

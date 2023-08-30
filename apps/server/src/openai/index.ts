@@ -3,6 +3,7 @@ import { Stream } from 'openai/streaming';
 import logger from '../logger.js';
 import { IConversation } from '../models/conversation.js';
 import { IMessage, MessageStatus, findPreviousMessages } from '../models/message.js';
+import { validate } from 'json-schema';
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
@@ -68,15 +69,60 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
 
     }
 
-    async execute(): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+    async execute(): Promise<any> {
         const messages = await this.buildMessages();
         logger.log(messages, "Executing a new chat Request");
         const start = Date.now();
         const result = await this.requestChatCompletion(messages, false) as OpenAI.Chat.Completions.ChatCompletion;
         const duration = Date.now() - start;
-        logger.log(`Chat Result received in ${duration/1000}s`, result);
-        return result;
+        logger.log(`Chat Result received in ${duration / 1000}s`, result);
+
+        //if no schema, return content
+        if (!this.schema) {
+            return result.choices[0]?.message.content as string;
+        }
+
+        //we have a schema: get the content and return after validation
+        const data = result.choices[0]?.message.function_call?.arguments as any;
+        if (!data) {
+            logger.error("Response is not valid", result);
+            throw new Error("Response is not valid: no data");
+        }
+
+        const dataObject = JSON.parse(data);
+        if (!dataObject) {
+            logger.error("Response is not valid", data);
+            throw new Error("Response is not valid: cannot parse data");
+        };
+
+        //validate response if schema is defined
+        if (!this.validateResponse(dataObject)) {
+            logger.error("Response is not valid", data);
+            throw new Error("Response is not valid");
+        }
+
+        return dataObject;
     }
+
+    //validate the response against the schema if any
+    validateResponse(dataObject: Object): boolean {
+
+        if (!this.schema) {
+            throw new Error("No schema defined");
+        };
+
+        const valid = validate(dataObject, this.schema);
+
+        if (valid.valid) {
+            return true;
+        } else {
+            console.log("XXXXXXX VALIDATION ERROR XXXXXXX", valid.errors, dataObject);
+            return false;
+        }
+
+    }
+
+
 
     async stream(): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
         const messages = await this.buildMessages();
