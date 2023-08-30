@@ -1,4 +1,4 @@
-var story, lang
+var story, lang?
 
 
 POST http://localhost:8089/api/v1/stories/${story}/verify_answers
@@ -6,26 +6,28 @@ Content-Type: application/json
 
 {
     user_language: lang ?? 'EN',
+    
     answers: [
     {
-      "question": "Qui sont les deux personnages principaux de l'histoire ?",
-      "answer": "Jake Paul et Winston Churchill"
+      "question": "Pourquoi est-ce que Kurt Cobain est honoré dans cette histoire?",
+      "answer": "transcendé les frontières de la musique"
     },
     {
-      "question": "Pourquoi Jake Paul a-t-il défié Winston Churchill ?",
-      "answer": "Parce que Jake a un ego gonflé"
+      "question": "Qu'est-ce que Kurt Cobain a réussi à exprimer à travers sa musique selon le texte?",
+      "answer": "il a su exprimer la douleur de l'existence"
     },
     {
-      "question": "Quelle était l'atmosphère le jour du débat ?",
-        "answer": "Très zen"
+      "question": "Quels sont les aspects négatifs de la vie de Kurt Cobain mentionnés dans le texte?",
+      "answer": "il est drogué"
     },
     {
-      "question": "Comment Paul a-t-il réagi après le discours de Churchill ?",
-        "answer": "Il a été impressionné"
+      "question": "Qu'est-ce qui est célébré aujourd'hui selon le texte?",
+      "answer": "l'entrée au panthéon de Kurt Cobain"
     },
     {
-      "question": "Quel est le message final de Churchill à Paul ?",
-        "answer": "L'âge n'a rien à voir avec la sagesse"
+      "question": "Qu'est-ce que Kurt Cobain a laissé dans le monde de la musique selon l'histoire?",
+      "answer": "un héritage musical"
     }
   ]
+
 }
