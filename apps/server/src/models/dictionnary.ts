@@ -8,13 +8,16 @@ import mongoose from "mongoose";
 
 export interface Definition {
     word: string;
+    word_kana?: string;
     exists: boolean;
     language: string;
     definitionLanguage: string;
     corrected_word?: string;
     part_of_speech?: string;
+    pronounciation?: string;
     morphological_characteristics?: string;
     normalized_form?: string;
+    normalized_form_kana?: string;
     senses?: Sense[];
     source?: string;
     match_also: string[];
@@ -34,12 +37,15 @@ interface Sense {
 
 export const DefinitionSchema = new mongoose.Schema<Definition>({
     word: { type: String, required: true, index: true },
+    word_kana: { type: String },
     exists: { type: Boolean, required: true, index: true },
     language: { type: String, required: true, index: true },
+    pronounciation: { type: String },
     definitionLanguage: { type: String, required: true, index: true },
     part_of_speech: { type: String },
     morphological_characteristics: { type: String },
     normalized_form: { type: String },
+    normalized_form_kana: { type: String },
     senses: [{
         language: { type: String },
         translation: { type: String },
