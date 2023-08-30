@@ -1,6 +1,6 @@
 import { Resource, Router, get } from "@koa-stack/server";
 import { Context } from "koa";
-import env from "../env.js";
+import Env from "../env.js";
 import ConversationsResource from "./conversations.js";
 import { MessagesResource } from "./messages.js";
 import { ExplainResource } from "./explain.js";
@@ -24,7 +24,7 @@ export interface IExplainPayload extends IUserPayload {
 export default class ApiRoot extends Resource {
     @get('/')
     async getRoot(ctx: Context) {
-        ctx.body = { version: env.version };
+        ctx.body = { version: Env.version };
     }
 
 

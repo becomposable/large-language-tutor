@@ -1,9 +1,11 @@
 import { Context } from "koa";
 import TutorServer from "./TutorServer.js";
 import { ErrorInfo } from "@koa-stack/server";
+import { initializeApp } from 'firebase-admin/app';
+import Env from "./env.js";
 
 const logger = console
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8089 ;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8089;
 
 process.on('uncaughtException', function (err) {
     console.error('Uncaught error!', err.stack);
@@ -11,6 +13,10 @@ process.on('uncaughtException', function (err) {
 
 logger.info(`Node version: ${process.version}`);
 logger.info(`Starting language tutor server on port ${PORT} ...`);
+
+initializeApp({
+    projectId: Env.google.projectId,
+});
 
 new TutorServer().withErrorHandler({
     log(ctx: Context, err: Error | object, info?: ErrorInfo) {

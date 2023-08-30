@@ -57,3 +57,14 @@ export interface IExplanation {
     user?: string
 }
 
+
+export interface IUser {
+    id: string;
+    externalId: string;
+    email: string;
+    name: string;
+    picture?: string;
+    language?: string;
+    phone?: string;
+    sign_in_provider?: string;
+}

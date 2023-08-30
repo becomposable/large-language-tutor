@@ -3,6 +3,7 @@ import compress from "koa-compress";
 import ApiRoot from "./api/index.js";
 import cors from '@koa/cors';
 import Database from "./database.js";
+import { AuthResource } from "./auth/index.js";
 
 export default class TutorServer extends KoaServer {
 
@@ -54,8 +55,12 @@ export default class TutorServer extends KoaServer {
             logger.info('Treblle middleware is not enabled');
         }*/
 
+
+        this.mount('/auth', AuthResource);
+
         //const apiRouter = 
         this.mount('/api/v1', ApiRoot);
+
         //apiRouter.use(authMiddleware);
 
     }

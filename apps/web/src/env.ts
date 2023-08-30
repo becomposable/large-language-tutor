@@ -10,6 +10,7 @@ const Env = {
     BASE_URL: env.BASE_URL,
     SERVER_URL: serverUrl,
     API_BASE_URL: `${serverUrl}/api/v1`,
+    AUTH_BASE_URL: `${serverUrl}/auth`,
     KUROMOJI_DICT: env.VITE_KUROMOJI_DICT || "/kuromoji/dict/",
 }
 

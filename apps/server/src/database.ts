@@ -1,7 +1,7 @@
 
 import mongoose from 'mongoose';
 import logger from './logger.js';
-import env from './env.js';
+import Env from './env.js';
 
 
 class Database {
@@ -9,11 +9,11 @@ class Database {
 
     async start() {
         logger.info(`Starting Mongoose}`);
-        this.mongoose = await mongoose.connect(env.db.url, {
-            user: env.db.username,
-            pass: env.db.password
+        this.mongoose = await mongoose.connect(Env.db.url!, {
+            user: Env.db.username,
+            pass: Env.db.password
         });
-        logger.info(`Connected to: ${env.db.url}`);
+        logger.info(`Connected to: ${Env.db.url}`);
 
         this.mongoose.set('strict', false);
         this.mongoose.set('strictQuery', false);

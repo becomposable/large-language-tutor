@@ -15,7 +15,7 @@ interface IRequestParamsWithPayload extends IRequestParams {
     payload?: object | string | null
 }
 
-export function fetchPromise(fetchImpl?: FETCH_FN) {
+export function fetchPromise(fetchImpl?: FETCH_FN | Promise<FETCH_FN>) {
     if (fetchImpl) {
         return Promise.resolve(fetchImpl);
     } else if (typeof globalThis.fetch === 'function') {
@@ -37,18 +37,22 @@ export default class FetchClient {
         'accept': 'application/json'
     };
 
-    lang(locale: string | undefined) {
+    constructor(baseUrl: string, fetchImpl?: FETCH_FN | Promise<FETCH_FN>) {
+        this.baseUrl = baseUrl[baseUrl.length - 1] === '/' ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+        this._fetch = fetchPromise(fetchImpl);
+    }
+
+    clone(baseUrl: string) {
+        return new FetchClient(baseUrl, this._fetch).withHeaders(this.headers);
+    }
+
+    withLang(locale: string | undefined | null) {
         if (locale) {
             this.headers['accept-language'] = locale;
         } else {
             delete this.headers['accept-language'];
         }
         return this;
-    }
-
-    constructor(baseUrl: string, fetchImpl?: FETCH_FN) {
-        this.baseUrl = baseUrl[baseUrl.length - 1] === '/' ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
-        this._fetch = fetchPromise(fetchImpl);
     }
 
     withHeaders(headers: Record<string, string>) {

@@ -19,9 +19,11 @@ export interface IUser {
     language?: string; // lamnguage code 
     level?: number;
     phone?: string;
+    picture?: string; // photo url if any
+    sign_in_provider?: string;
+    avatar?: string; // avatar version TODO remove?
     locale?: string;
     timeZone?: string;
-    avatar?: string; // avatar version
     lastAccess?: Date;
     created: Date;
     modified: Date;
@@ -44,6 +46,8 @@ export const UserSchema = new mongoose.Schema<IUser>({
     },
     name: { type: String, required: true },
     phone: String,
+    picture: String,
+    sign_in_provider: String,
     language: String,
     level: Number,
     avatar: String,
@@ -70,5 +74,5 @@ export async function createUser(externalId: string, name: string, email: string
 }
 
 export function findUserByEmail(email: string) {
-    return UserModel.findOne({ email: email ? email.toLowerCase() : email });
+    return UserModel.findOne({ email: email ? email.toLowerCase() : email }).exec();
 }
