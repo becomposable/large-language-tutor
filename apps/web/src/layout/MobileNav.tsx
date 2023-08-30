@@ -7,13 +7,13 @@ import {
 import { useAppBgColorModeValue, useAppBorderColorModeValue } from "./colors"
 import { useUserSession } from "../context/UserSession";
 import SignInModal from "../features/user/SignInModal";
+import UserMenu from "../features/user/UserMenu";
 
 
 interface MobileNavProps extends FlexProps {
     onOpen: () => void
 }
 export default function MobileNav({ onOpen, ...rest }: MobileNavProps) {
-    const { user, signOut } = useUserSession();
     const appBg = useAppBgColorModeValue();
     const appBorderColor = useAppBorderColorModeValue();
 
@@ -46,45 +46,7 @@ export default function MobileNav({ onOpen, ...rest }: MobileNavProps) {
 
             <HStack spacing={{ base: '0', md: '6' }}>
                 <IconButton size="lg" variant="ghost" aria-label="open menu" icon={<FiBell />} />
-                <Flex alignItems={'center'}>
-                    {user ? (
-                        <Menu>
-                            <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: 'none' }}>
-                                <HStack>
-                                    <Avatar
-                                        size={'sm'}
-                                        src={user.picture || undefined}
-                                        name={user.name}
-                                    />
-                                    <VStack
-                                        display={{ base: 'none', md: 'flex' }}
-                                        alignItems="flex-start"
-                                        spacing="1px"
-                                        ml="2">
-                                        <Text fontSize="sm">{user.name}</Text>
-                                        {/*
-                                        <Text fontSize="xs" color="gray.600">
-                                            Admin
-                                         </Text>
-                                        */}
-                                    </VStack>
-                                    <Box display={{ base: 'none', md: 'flex' }}>
-                                        <FiChevronDown />
-                                    </Box>
-                                </HStack>
-                            </MenuButton>
-                            <MenuList
-                                bg={appBg}
-                                borderColor={appBorderColor}>
-                                <MenuItem>Profile</MenuItem>
-                                <MenuItem>Settings</MenuItem>
-                                <MenuItem>Billing</MenuItem>
-                                <MenuDivider />
-                                <MenuItem onClick={signOut}>Sign out</MenuItem>
-                            </MenuList>
-                        </Menu>
-                    ) : <SignInModal />}
-                </Flex>
+                <UserMenu />
             </HStack>
         </Flex>
     )

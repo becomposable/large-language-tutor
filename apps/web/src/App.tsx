@@ -34,10 +34,10 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-    useOnWindowLoad(() => {
-        // force kuromoji dictionaires to load on window load
-        getKuromojiTokenizer();
-    });
+    // useOnWindowLoad(() => {
+    //     // force kuromoji dictionaires to load on window load
+    //     getKuromojiTokenizer();
+    // });
 
     return (
         <UserSessionProvider>
