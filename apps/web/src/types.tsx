@@ -11,10 +11,15 @@ export enum MessageStatus {
 }
 
 export enum Languages {
-    Japanese = "Japanese",
-    English = "English",
-    French = "French",
-    Romanian = "Romanian"
+    Japanese = "JA",
+    English = "EN",
+    French = "FR",
+    Spanish = "SP",
+    Portugese = "PT",
+    Italian = "IT",
+    German = "DE",
+    Dutch = "NL",
+    Romanian = "RO"
 }
 
 export interface IMessage {

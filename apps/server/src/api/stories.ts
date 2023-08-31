@@ -21,11 +21,13 @@ export class StoriesResource extends Resource {
         const topic = payload.topic ?? undefined;
         const level = payload.level ?? undefined;
         const style = payload.style ?? undefined;
-        //const userLanguage = payload.userLanguage ?? 'English';
+        const type = payload.type ?? undefined;
+        const blocking = payload.blocking ?? false;
+        const storyRequest = new StoryGenerator(studyLanguage, topic, level, style, type);
 
-        const storyRequest = new StoryGenerator(studyLanguage, topic, level, style);
+        
         const result = await storyRequest.execute();
-        const parsed = result.choices[0]?.message.content?.split('\n');
+        const parsed = result.split('\n');
         const title = parsed?.shift();
         const content = parsed?.join('\n');
 
@@ -40,6 +42,7 @@ export class StoriesResource extends Resource {
             topic: topic,
             level: level,
             style: style,
+            type: type,
         });
 
         ctx.body = jsonDoc(story);
@@ -122,28 +125,31 @@ class StoryGenerator extends CompletionBase<StoryGenerator> {
     topic?: string;
     level?: string;
     style?: string;
+    type?: string;
 
-    constructor(study_language?: string, topic?: string, level?: string, style?: string) {
+    constructor(study_language?: string, topic?: string, level?: string, style?: string, type?: string) {
         super(study_language);
         this.topic = topic;
         this.level = level;
         this.style = style;
+        this.type = type;
     }
 
     getAppInstruction(): string {
 
         const length = this.level === 'advanced' ? 700 : 250;
+        const type = this.type ?? 'story';
 
         return `You are an excellent story writer, capable of many styles and topics.
         The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         The user want to train his reading and comprehension skills or just have fun.
         The user is estimated to be at a ${this.level} level.
-        Please write a story (about ${length} words) to help the user practice.
-        ${this.topic ? `The story should be about: ${this.topic}.` : ''}
-        ${this.level ? `The story should be using a ${this.level} language level.` : ''}
-        ${this.style ? `The story should be writted in the following style: ${this.style}.` : ''}
-        Directly output the story, no additional text as it will be parsed by a machine.
-        The first line must be the title of the story, the rest must be the story itself.
+        Please write a ${type} (about ${length} words) to help the user practice.
+        ${this.topic ? `The ${type} should be about: ${this.topic}.` : ''}
+        ${this.level ? `The ${type} should be using a ${this.level} language level.` : ''}
+        ${this.style ? `The ${type} should be writted in the following style: ${this.style}.` : ''}
+        Directly output the content, no additional text as it will be parsed by a machine.
+        The first line must be the of the content, the rest must be the story itself.
         `;
     }
 

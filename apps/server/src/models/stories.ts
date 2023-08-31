@@ -16,6 +16,7 @@ export interface IStory {
     topic?: string,
     style?: string,
     level?: string,
+    type?: string,
     user?: string | ObjectIdType | IUser,
 }
 
@@ -25,6 +26,7 @@ export const StorySchema = new mongoose.Schema<IStory>({
     style: { type: String, required: false, index: false },
     language: { type: String, required: false, index: false },
     level: { type: String, required: false, index: false },
+    type: { type: String, required: false, index: false },
     created: { type: Date, index: true },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
     content: String,

@@ -6,6 +6,7 @@ import { FiHome, FiSettings } from "react-icons/fi"
 import { useNavigate } from "react-router"
 import CreateConversationModal from "../features/conversations/CreateConversationModal"
 import { useAppBgColorModeValue, useAppBorderColorModeValue } from "./colors"
+import CreateStoryModal from "../features/stories/CreateStoryModal"
 
 interface LinkItemProps {
     name: string
@@ -22,7 +23,7 @@ const LinkItems: Array<LinkItemProps> = [
     },
     {
         name: 'Stories', icon: BsBodyText, href: '/stories',
-        action: <CreateConversationModal />
+        action: <CreateStoryModal />
     },
     // {
     //     name: 'Settings', icon: FiSettings, href: '/settings'

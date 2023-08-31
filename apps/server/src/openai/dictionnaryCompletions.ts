@@ -35,6 +35,7 @@ const definitionSchema: JSONSchema4 = {
     }
 };
 
+ 
 
 export async function defineWord(word: string, word_language: string, user_language: string): Promise<OpenAI.Chat.Completions.ChatCompletion> {
 
