@@ -8116,7 +8116,10 @@ BrowserDictionaryLoader.prototype = Object.create(DictionaryLoader.prototype);
 BrowserDictionaryLoader.prototype.loadArrayBuffer = function (url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
+    /// THE LINES BELOW ARE ADDED ///
     xhr.setRequestHeader("Cache-Control", "max-stale, max-age: 2592000"); // Force cache to 30 days
+    xhr.setRequestHeader("Referer", "https://lang-tutor-five.vercel.app");    //remove referrer
+    /// THE LINES ABOVE ARE ADDED ///
     xhr.responseType = "arraybuffer";
     xhr.onload = function () {
         if (this.status > 0 && this.status !== 200) {
