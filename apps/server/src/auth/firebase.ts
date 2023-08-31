@@ -1,6 +1,6 @@
 import firebase from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import { AuthModule, AuthModuleOptions, IUser, Principal } from './module.js';
+import { AuthModule, AuthModuleOptions, IAuthUser, Principal } from './module.js';
 import { AuthError } from './error.js';
 
 function verifyIdToken(token: string, checkRevoked?: boolean | undefined) {
@@ -8,7 +8,7 @@ function verifyIdToken(token: string, checkRevoked?: boolean | undefined) {
 }
 
 
-export class FirebasePrincipal<UserT extends IUser> extends Principal<UserT> {
+export class FirebasePrincipal<UserT extends IAuthUser> extends Principal<UserT> {
 
     constructor(module: FirebaseAuth<UserT>, public token: DecodedIdToken) {
         super(module, token.uid);
@@ -20,7 +20,7 @@ export class FirebasePrincipal<UserT extends IUser> extends Principal<UserT> {
 
 }
 
-export class FirebaseAuth<UserT extends IUser> extends AuthModule<FirebasePrincipal<UserT>, UserT> {
+export class FirebaseAuth<UserT extends IAuthUser> extends AuthModule<FirebasePrincipal<UserT>, UserT> {
 
     logError = (err: any) => console.error('Firebase auth failed', err);
 

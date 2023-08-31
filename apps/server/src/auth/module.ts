@@ -15,11 +15,11 @@ import { AuthError } from './error.js';
  * 
  * The only requoirement for the user object is to provide a toJsonObject method.
  */
-export interface IUser {
+export interface IAuthUser {
     toJsonObject: () => Promise<Record<string, any>>;
 }
 
-export abstract class Principal<UserT extends IUser = any> {
+export abstract class Principal<UserT extends IAuthUser = any> {
     _user: Promise<any> | undefined;
     constructor(public module: AuthModule<any, UserT>, public id: string) {
     }

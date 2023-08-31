@@ -1,7 +1,7 @@
 import { AuthError } from "./error.js";
-import { AuthModule, AuthModuleOptions, IUser, Principal } from "./module.js";
+import { AuthModule, AuthModuleOptions, IAuthUser, Principal } from "./module.js";
 
-export class ApiKeyPrincipal<UserT extends IUser> extends Principal<UserT> {
+export class ApiKeyPrincipal<UserT extends IAuthUser> extends Principal<UserT> {
 
     constructor(module: ApiKeyAuth<UserT>, apiKey: string) {
         super(module, apiKey);
@@ -9,11 +9,11 @@ export class ApiKeyPrincipal<UserT extends IUser> extends Principal<UserT> {
 
 }
 
-interface ApiKeyAuthOptions<UserT extends IUser> extends AuthModuleOptions<ApiKeyPrincipal<UserT>, UserT> {
+interface ApiKeyAuthOptions<UserT extends IAuthUser> extends AuthModuleOptions<ApiKeyPrincipal<UserT>, UserT> {
     prefixes: string[];
 }
 
-export class ApiKeyAuth<UserT extends IUser> extends AuthModule<ApiKeyPrincipal<UserT>, UserT> {
+export class ApiKeyAuth<UserT extends IAuthUser> extends AuthModule<ApiKeyPrincipal<UserT>, UserT> {
 
     prefixes: string[];
 

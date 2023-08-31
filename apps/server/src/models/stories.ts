@@ -1,7 +1,8 @@
 import type { ObjectId as ObjectIdType } from 'mongoose';
 import mongoose from 'mongoose';
-import { IUser } from './user.js';
+import { IAccount } from './account.js';
 import { MessageStatus } from './message.js';
+import { IUser } from './user.js';
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
@@ -20,6 +21,7 @@ export interface IStory {
     level?: string,
     type?: string,
     user?: string | ObjectIdType | IUser,
+    account?: string | ObjectIdType | IAccount,
 }
 
 export const StorySchema = new mongoose.Schema<IStory>({
@@ -32,6 +34,7 @@ export const StorySchema = new mongoose.Schema<IStory>({
     type: { type: String, required: false, index: false },
     created: { type: Date, index: true },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
+    account: { type: ObjectId, ref: 'Account', required: false, index: true },
     content: String,
 }, {
     timestamps: { createdAt: 'created', updatedAt: 'modified' }

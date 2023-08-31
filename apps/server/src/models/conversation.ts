@@ -10,6 +10,7 @@ export interface IConversation {
     study_language: string, // language code
     user_language: string, // language code
     waiting_for_completion: boolean,
+    account?: string | ObjectIdType; //the account id
     user?: string | ObjectIdType; //the user id
     title?: string,
     created: Date,
@@ -20,6 +21,7 @@ export const ConversationSchema = new mongoose.Schema<IConversation>({
     study_language: { type: String, required: true },
     user_language: { type: String, required: true },
     user: { type: ObjectId, ref: 'User', required: false, index: true },
+    account: { type: ObjectId, ref: 'Account', required: false, index: true },
     title: { type: String, required: false },
 }, {
     timestamps: { createdAt: 'created', updatedAt: 'modified' }

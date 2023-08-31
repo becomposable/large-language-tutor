@@ -5,8 +5,8 @@
 import mongoose from 'mongoose';
 import type { ObjectId as ObjectIdType } from 'mongoose';
 
-//const Schema = mongoose.Schema;
-//const ObjectId = Schema.Types.ObjectId;
+const Schema = mongoose.Schema;
+const ObjectId = Schema.Types.ObjectId;
 
 const emailRegex = /^([\w\-\.\+]+@([\w\-]+\.)+[\w-]{2,4})?$/;
 
@@ -27,6 +27,8 @@ export interface IUser {
     lastAccess?: Date;
     created: Date;
     modified: Date;
+
+    last_selected_account?: string | ObjectIdType;
 }
 
 export type UserDocument = mongoose.Document<ObjectIdType, any, IUser> & IUser;
@@ -48,6 +50,7 @@ export const UserSchema = new mongoose.Schema<IUser>({
     phone: String,
     picture: String,
     sign_in_provider: String,
+    last_selected_account: { type: ObjectId, ref: 'Account', required: false },
     language: String,
     level: Number,
     avatar: String,
