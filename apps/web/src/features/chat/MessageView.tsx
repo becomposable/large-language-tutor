@@ -3,7 +3,7 @@ import { MdOutlineVolumeUp } from "react-icons/md";
 import JpText from "../../components/JpText";
 import StyledIconButton from "../../components/StyledIconButton";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
-import { IConversation, IMessage, MessageOrigin, MessageStatus } from "../../types";
+import { IConversation, IMessage, Languages, MessageOrigin, MessageStatus } from "../../types";
 import ExplainModal from "./ExplainModal";
 import MessageBox from "./MessageBox";
 
@@ -28,7 +28,7 @@ export default function MessageView({ message, conversation }: MessageViewProps)
     const isActive = message.status === MessageStatus.active;
     const isPending = message.status === MessageStatus.pending;
 
-    const isJp = conversation.study_language === 'Japanese';
+    const isJp = conversation.study_language === Languages.Japanese;
 
     return (
         <MessageBox>

@@ -69,8 +69,8 @@ function CreateForm({ onClose }: CreateFormProps) {
                 style: style,
                 level: level,
                 topic: topic,
-                type: type
-
+                type: type,
+                blocking: false // do not generate the storyt now but when the story page will be loaded
             }
         }).then(r => {
             onClose();

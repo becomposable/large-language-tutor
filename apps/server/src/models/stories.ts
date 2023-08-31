@@ -12,7 +12,7 @@ export interface IStory {
     status: MessageStatus,
     created: Date,
     content?: string,
-    title: string,
+    title?: string,
     questions?: string[],
     language?: string,
     topic?: string,
@@ -24,7 +24,7 @@ export interface IStory {
 
 export const StorySchema = new mongoose.Schema<IStory>({
     status: { type: String, enum: Object.values(MessageStatus), default: MessageStatus.active },
-    title: { type: String, required: true, index: true },
+    title: { type: String, required: false, index: true },
     topic: { type: String, required: false, index: false },
     style: { type: String, required: false, index: false },
     language: { type: String, required: false, index: false },
