@@ -3,17 +3,18 @@ import FetchClient from "../fetch-client";
 import Env from "../env";
 import { firebaseAuth } from "../auth/firebase";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { IUser } from "../types";
+import { IAccount, IUser, IUserSessionInfo, IUserWithAccounts } from "../types";
 import { signOut } from "firebase/auth"
 
 export interface IUserSession {
-    user?: IUser;
+    user?: IUserWithAccounts;
+    account?: IAccount;
     client: FetchClient;
     signOut: () => void;
     isLoading: boolean;
 }
 
-function linkUser(client: FetchClient, firebaseUser: User): Promise<IUser> {
+function linkUser(client: FetchClient, firebaseUser: User): Promise<IUserSessionInfo> {
     return client.clone(Env.AUTH_BASE_URL).post('/link', {
         payload: {
             externalId: firebaseUser.uid,
@@ -28,7 +29,7 @@ function _signOut() {
 }
 
 const UserSessionContext = createContext<IUserSession>({
-    user: undefined, client: new FetchClient(Env.API_BASE_URL), signOut: _signOut, isLoading: false
+    user: undefined, account: undefined, client: new FetchClient(Env.API_BASE_URL), signOut: _signOut, isLoading: false
 });
 
 interface UserSessionProviderProps {
@@ -48,16 +49,38 @@ export function UserSessionProvider({ children }: UserSessionProviderProps) {
                 firebaseUser.getIdTokenResult(false).then((token) => {
                     session.client.headers.authorization = `Bearer ${token.token}`;
                     return linkUser(session.client, firebaseUser)
-                }).then(user => {
-                    setSession({ ...session, user: user, isLoading: false });
+                }).then(userInfo => {
+                    const userWithAccounts = {
+                        ...userInfo.user,
+                        accounts: userInfo.accounts
+                    };
+                    console.log('+++++++', userInfo);
+                    session.client.headers[Env.ACCOUNT_HEADER] = userInfo.selected_account.id;
+                    setSession({
+                        ...session,
+                        user: userWithAccounts,
+                        account: userInfo.selected_account,
+                        isLoading: false
+                    });
                 }).catch(err => {
                     console.error('Session state change error', err);
-                    setSession({ ...session, user: undefined, isLoading: false });
+                    setSession({
+                        ...session,
+                        user: undefined,
+                        account: undefined,
+                        isLoading: false
+                    });
                 });
             } else {
                 // anonymous user
                 delete session.client.headers.authorization;
-                setSession({ ...session, user: undefined, isLoading: false });
+                delete session.client.headers[Env.ACCOUNT_HEADER];
+                setSession({
+                    ...session,
+                    user: undefined,
+                    account: undefined,
+                    isLoading: false
+                });
             }
         })
     }, []);

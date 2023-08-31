@@ -1,7 +1,7 @@
 import { Resource, Router, get, post } from "@koa-stack/server";
 import { Context } from "koa";
 import { ConversationModel } from "../models/conversation.js";
-import { jsonDoc, jsonDocs } from "./utils.js";
+import { jsonDoc, jsonDocs, requestAccount } from "./utils.js";
 import { MessageModel } from "../models/message.js";
 import { ObjectId } from "mongodb";
 
@@ -58,6 +58,7 @@ export default class ConversationsResource extends Resource {
      */
     @post('/')
     async createConversation(ctx: Context) {
+        const accountId = requestAccount(ctx);
         const payload = (await ctx.payload).json;
 
         const study_language = payload.study_language ?? 'Japanese';
