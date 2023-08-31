@@ -6,6 +6,7 @@ import { MessagesResource } from "./messages.js";
 import { ExplainResource } from "./explain.js";
 import { StoriesResource } from "./stories.js";
 import { DictionnaryResource } from "./dictionnary.js";
+import { authMiddleware } from "../auth/module.js";
 
 //TODO put in a shared project
 export interface IUserPayload {
@@ -23,6 +24,7 @@ export interface IExplainPayload extends IUserPayload {
 }
 
 export default class ApiRoot extends Resource {
+
     @get('/')
     async getRoot(ctx: Context) {
         ctx.body = { version: Env.version };
@@ -87,6 +89,8 @@ export default class ApiRoot extends Resource {
 
     setup(router: Router) {
         super.setup(router);
+
+        router.use(authMiddleware);
 
         // this will match all resources rooted in /users like /users or /users/john
         //router.use('/users', Users);

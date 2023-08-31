@@ -1,15 +1,16 @@
 import firebase from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/auth';
-import { AuthError, AuthModule, AuthModuleOptions, Principal } from './module.js';
+import { AuthModule, AuthModuleOptions, IAuthUser, Principal } from './module.js';
+import { AuthError } from './error.js';
 
 function verifyIdToken(token: string, checkRevoked?: boolean | undefined) {
     return firebase.auth().verifyIdToken(token, checkRevoked);
 }
 
 
-export class FirebasePrincipal<UserDocumentT> extends Principal<UserDocumentT> {
+export class FirebasePrincipal<UserT extends IAuthUser> extends Principal<UserT> {
 
-    constructor(module: FirebaseAuth<UserDocumentT>, public token: DecodedIdToken) {
+    constructor(module: FirebaseAuth<UserT>, public token: DecodedIdToken) {
         super(module, token.uid);
     }
 
@@ -19,11 +20,11 @@ export class FirebasePrincipal<UserDocumentT> extends Principal<UserDocumentT> {
 
 }
 
-export class FirebaseAuth<UserDocumentT> extends AuthModule<FirebasePrincipal<UserDocumentT>, UserDocumentT> {
+export class FirebaseAuth<UserT extends IAuthUser> extends AuthModule<FirebasePrincipal<UserT>, UserT> {
 
     logError = (err: any) => console.error('Firebase auth failed', err);
 
-    constructor(opts: AuthModuleOptions<FirebasePrincipal<UserDocumentT>>) {
+    constructor(opts: AuthModuleOptions<FirebasePrincipal<UserT>>) {
         super('firebase', opts)
     }
 
@@ -32,7 +33,7 @@ export class FirebaseAuth<UserDocumentT> extends AuthModule<FirebasePrincipal<Us
         return this;
     }
 
-    async authorize(authScheme: string, authToken: string): Promise<FirebasePrincipal<UserDocumentT> | undefined> {
+    async authorize(authScheme: string, authToken: string): Promise<FirebasePrincipal<UserT> | undefined> {
         if (authScheme === 'bearer') {
             try {
                 const decodedToken = await verifyIdToken(authToken);

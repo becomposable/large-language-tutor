@@ -6,6 +6,7 @@ dotenv.config();
 const serverUrl = process.env.SERVER_URL || "http://localhost:8089";
 
 const Env = {
+    xAccountHeader: process.env.X_ACCOUNT_HEADER || 'x-account-id',
     isDev: process.env.NODE_ENV === 'development',
     isProd: process.env.NODE_ENV === 'production',
     version: process.env.VERSION || "1.0.0",

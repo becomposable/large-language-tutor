@@ -1,51 +1,52 @@
 import { IncomingMessage } from 'http';
 import { Context, Next } from 'koa';
+import { AuthError } from './error.js';
 
-export class AuthError extends Error {
-    statusCode: number;
-    expose = true; // this will expose the error to the client - see error handling in @koa-stack/server
-    constructor(message: string, statusCode: number) {
-        super(message);
-        this.statusCode = statusCode;
-    }
-
-    static notAuthorized() {
-        return new AuthError('Unauthorized', 401);
-    }
-
-    static notSupported() {
-        return new AuthError('Feature not supported', 401);
-    }
-
-    static malformedAuthorizationHeader() {
-        return new AuthError('Malformed authorization header', 401)
-    }
-
-    static unexpectedError() {
-        return new AuthError('Unexpected error', 500);
-    }
+/**
+ * An interface for user objects. Should be implemented by the application 
+ * 
+ * The user object is used on the server to get basic details about the user and 
+ * to be able to check permissions. Usually it is wrapping a database user model filled 
+ * with basic details and optionally with roles and permissions.
+ * 
+ * The user object required by the client side may requrie additional information ans must be serializable as json.
+ * You can get the user object to be sent to the client using `toJsonObject`
+ * This method is async because it may need to fetch additional information from the database.
+ * 
+ * The only requoirement for the user object is to provide a toJsonObject method.
+ */
+export interface IAuthUser {
+    toJsonObject: () => Promise<Record<string, any>>;
 }
 
-export abstract class Principal<UserDocumentT = any> {
+export abstract class Principal<UserT extends IAuthUser = any> {
     _user: Promise<any> | undefined;
-    constructor(public module: AuthModule<any, UserDocumentT>, public id: string) {
+    constructor(public module: AuthModule<any, UserT>, public id: string) {
     }
     get type() {
         return this.module.name;
     }
 
-    createUser(): Promise<UserDocumentT> {
+    get isAnonymous() {
+        return false;
+    }
+
+    get email(): string | undefined {
+        return undefined;
+    }
+
+    createUser(): Promise<UserT> {
         return this.module.createUser(this);
     }
 
-    getUser(): Promise<UserDocumentT | null> {
+    getUser(): Promise<UserT | null> {
         if (!this._user) {
             this._user = this.module.getUser(this);
         }
         return this._user;
     }
 
-    async getOrCreateUser(): Promise<UserDocumentT> {
+    async getOrCreateUser(): Promise<UserT> {
         const user = await this.getUser();
         if (!user) {
             this._user = this.createUser();
@@ -61,10 +62,9 @@ export function registerAuthModule(module: AuthModule<any>) {
     MODULES.push(module);
 }
 
-export interface AuthModuleOptions<PrincipalT extends Principal, UserDocumentT = any> {
-    getUser: (principal: PrincipalT) => Promise<UserDocumentT | null>;
-    createUser?: (principal: PrincipalT) => Promise<UserDocumentT>,
-    createUserOnAuth?: boolean;
+export interface AuthModuleOptions<PrincipalT extends Principal, UserT = any> {
+    getUser: (principal: PrincipalT) => Promise<UserT | null>;
+    createUser?: (principal: PrincipalT) => Promise<UserT>,
 }
 export abstract class AuthModule<PrincipalT extends Principal = Principal, UserDocumentT = any> {
 
@@ -141,9 +141,6 @@ export async function authorizeRequest(req: IncomingMessage): Promise<Principal>
 }
 
 export async function authMiddleware(ctx: Context, next: Next): Promise<unknown> {
-    const principal = await authorize(ctx);
-    if (principal.module.opts.createUserOnAuth) {
-        await principal.getOrCreateUser();
-    }
+    await authorize(ctx);
     return next();
 }
