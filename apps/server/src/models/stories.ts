@@ -1,6 +1,7 @@
 import type { ObjectId as ObjectIdType } from 'mongoose';
 import mongoose from 'mongoose';
 import { IUser } from './user.js';
+import { MessageStatus } from './message.js';
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
@@ -8,8 +9,9 @@ const ObjectId = Schema.Types.ObjectId;
 export interface IStory {
     readonly id: string,
     readonly _id: ObjectIdType,
+    status: MessageStatus,
     created: Date,
-    content: string,
+    content?: string,
     title: string,
     questions?: string[],
     language?: string,
@@ -21,6 +23,7 @@ export interface IStory {
 }
 
 export const StorySchema = new mongoose.Schema<IStory>({
+    status: { type: String, enum: Object.values(MessageStatus), default: MessageStatus.active },
     title: { type: String, required: true, index: true },
     topic: { type: String, required: false, index: false },
     style: { type: String, required: false, index: false },

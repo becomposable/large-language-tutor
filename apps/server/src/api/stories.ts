@@ -22,10 +22,10 @@ export class StoriesResource extends Resource {
         const level = payload.level ?? undefined;
         const style = payload.style ?? undefined;
         const type = payload.type ?? undefined;
-        const blocking = payload.blocking ?? false;
+        //const blocking = payload.blocking ?? false;
         const storyRequest = new StoryGenerator(studyLanguage, topic, level, style, type);
 
-        
+
         const result = await storyRequest.execute();
         const parsed = result.split('\n');
         const title = parsed?.shift();

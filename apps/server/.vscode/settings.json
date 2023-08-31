@@ -1,4 +1,9 @@
 {
     "javascript.preferences.importModuleSpecifierEnding": "js",
-    "typescript.preferences.importModuleSpecifierEnding": "js"
+    "typescript.preferences.importModuleSpecifierEnding": "js",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#442047",
+        "titleBar.activeBackground": "#5F2C63",
+        "titleBar.activeForeground": "#FCF9FC"
+    }
 }

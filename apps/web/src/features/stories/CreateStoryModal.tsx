@@ -9,11 +9,9 @@ import { useNavigate } from "react-router";
 
 
 interface CreateStoryModalProps {
-    userLanguage?: Languages;
-    studyLanguage?: string;
 }
 
-export default function CreateStoryModal({ userLanguage, studyLanguage }: CreateStoryModalProps) {
+export default function CreateStoryModal({ }: CreateStoryModalProps) {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const onOpenModal = (e: SyntheticEvent) => {
         e.preventDefault();
@@ -48,10 +46,10 @@ interface CreateFormProps {
 function CreateForm({ onClose }: CreateFormProps) {
     const [userLanguage, setUserLanguage] = useState<Languages>(Languages.English);
     const [studyLanguage, setStudyLanguage] = useState<Languages>(Languages.Japanese);
-    const [style, setStyle] = useState<string|undefined>(undefined);
-    const [level, setLevel] = useState<string|undefined>(undefined);
-    const [topic, setTopic] = useState<string|undefined>(undefined);
-    const [type, setType] = useState<string|undefined>(undefined);
+    const [style, setStyle] = useState<string>("");
+    const [level, setLevel] = useState<string>("beginner");
+    const [topic, setTopic] = useState<string>("");
+    const [type, setType] = useState<string>("story");
 
     const [isLoading, setLoading] = useState<boolean>(false);
     const { client } = useUserSession();
@@ -111,7 +109,7 @@ function CreateForm({ onClose }: CreateFormProps) {
                     <FormLabel>In the style of</FormLabel>
                     <SelectStyle value={style} onChange={setStyle} />
                 </FormControl>
-                
+
             </ModalBody>
             <ModalFooter>
                 <Button variant='ghost' mr={3} onClick={onClose}>
@@ -164,7 +162,7 @@ interface SelectLevelProps {
     value?: string;
     onChange: (value: string) => void;
 }
-function SelectLevel({ value, onChange }: SelectLevelProps ) {
+function SelectLevel({ value, onChange }: SelectLevelProps) {
     const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {
         onChange(ev.target.value)
     }
