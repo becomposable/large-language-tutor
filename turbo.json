@@ -11,6 +11,7 @@
         // `build` tasks  being completed first
         // (the `^` symbol signifies `upstream`).
         "dependsOn": ["^build"],
+        "cache": false,
         // note: output globs are relative to each package's `package.json`
         // (and not the monorepo root)
         "outputs": [".next/**", "!.next/cache/**"]
