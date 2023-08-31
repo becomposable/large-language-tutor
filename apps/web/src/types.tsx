@@ -69,6 +69,9 @@ export interface IExplanation {
 }
 
 
+export interface IUserWithAccounts extends IUser {
+    accounts: IAccountRef[];
+}
 export interface IUser {
     id: string;
     externalId: string;

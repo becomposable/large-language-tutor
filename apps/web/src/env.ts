@@ -7,6 +7,7 @@ const Env = {
     isProd: !!env.PROD,
     isDev: !!env.DEV,
     mode: env.MODE,
+    ACCOUNT_HEADER: env.VITE_ACCOUNT_HEADER || "x-account-id",
     BASE_URL: env.BASE_URL,
     SERVER_URL: serverUrl,
     API_BASE_URL: `${serverUrl}/api/v1`,
