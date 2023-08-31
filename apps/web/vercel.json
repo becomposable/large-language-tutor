@@ -3,7 +3,7 @@
 
   "headers": [
       {
-        "source": "/kuromoji/dict/(.+)",
+        "source": "/kuromoji/dict/(.*)",
         "headers": [
           { "key": "Access-Control-Allow-Origin", "value": "localhost:5173" },
           { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS" }
