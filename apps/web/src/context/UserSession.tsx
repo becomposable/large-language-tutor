@@ -54,7 +54,6 @@ export function UserSessionProvider({ children }: UserSessionProviderProps) {
                         ...userInfo.user,
                         accounts: userInfo.accounts
                     };
-                    console.log('+++++++', userInfo);
                     session.client.headers[Env.ACCOUNT_HEADER] = userInfo.selected_account.id;
                     setSession({
                         ...session,

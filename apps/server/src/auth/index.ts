@@ -7,11 +7,11 @@ import { IAuthUser, Principal, authorize } from "./module.js";
 import { AuthError } from "./error.js";
 import { AccountDocument, AccountModel, AccountRoles } from "../models/account.js";
 
-class AuthUser implements IAuthUser {
+export class AuthUser implements IAuthUser {
     constructor(public doc: UserDocument) {
     }
 
-    get id() {
+    get id(): string {
         return this.doc.id;
     }
 

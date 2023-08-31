@@ -8,12 +8,15 @@ import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
 import { Explanation } from "../models/explanation.js";
 import ExplainCompletion from "../openai/ExplainCompletion.js";
+import { authorize } from "../auth/module.js";
 
 
 export class MessagesResource extends Resource {
 
     @post('/')
     async postMessage(ctx: Context) {
+        await authorize(ctx);
+
         const payload = (await ctx.payload).json;
 
         const conversation = await ConversationModel.findById(payload.conversation);
@@ -58,7 +61,6 @@ export class MessagesResource extends Resource {
 }
 
 class MessageResource extends Resource {
-
 
     @get('/stream')
     async streamMessageCompletion(ctx: Context) {
