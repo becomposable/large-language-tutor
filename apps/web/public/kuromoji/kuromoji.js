@@ -8118,7 +8118,7 @@ BrowserDictionaryLoader.prototype.loadArrayBuffer = function (url, callback) {
     xhr.open("GET", url, true);
     /// THE LINES BELOW ARE ADDED ///
     xhr.setRequestHeader("Cache-Control", "max-stale, max-age: 2592000"); // Force cache to 30 days
-    xhr.setRequestHeader("Referer", "https://lang-tutor-five.vercel.app");    //remove referrer
+    xhr.setRequestHeader("Referer", "");    //remove referrer
     /// THE LINES ABOVE ARE ADDED ///
     xhr.responseType = "arraybuffer";
     xhr.onload = function () {
