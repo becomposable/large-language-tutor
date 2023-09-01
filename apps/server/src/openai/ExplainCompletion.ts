@@ -1,5 +1,4 @@
 import OpenAI from "openai";
-import { IConversation } from "../models/conversation.js";
 import { CompletionBase } from "../openai/index.js";
 
 export default class ExplainCompletion extends CompletionBase<ExplainCompletion> {
@@ -7,8 +6,8 @@ export default class ExplainCompletion extends CompletionBase<ExplainCompletion>
     content: string
     messageId?: string;
 
-    constructor(conversation: IConversation, content: string, messageId?: string) {
-        super(conversation.study_language, conversation.user_language);
+    constructor(studyLaguage: string, userLanguage: string, content: string, messageId?: string) {
+        super(studyLaguage, userLanguage);
         this.content = content;
         this.messageId = messageId;
     }
