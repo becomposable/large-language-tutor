@@ -10,6 +10,10 @@ export class AuthError extends Error {
         return new AuthError('Unauthorized', 401);
     }
 
+    static noMatchingUserFound() {
+        return new AuthError('No matching user found', 401);
+    }
+
     static notSupported() {
         return new AuthError('Feature not supported', 401);
     }

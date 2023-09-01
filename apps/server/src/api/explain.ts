@@ -11,7 +11,7 @@ import ExplainCompletion from "../openai/ExplainCompletion.js";
 export class ExplainResource extends Resource {
 
 
-    @get('/stream/:explanationId')
+    @get('/:explanationId/stream')
     async streamMessageCompletion(ctx: Context) {
         const explanationId = ctx.params.explanationId;
         const expl = await Explanation.findById(explanationId).populate<{

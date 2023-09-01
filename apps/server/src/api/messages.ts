@@ -3,19 +3,17 @@ import SSE from "better-sse";
 import { Context } from "koa";
 import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
+import { Explanation } from "../models/explanation.js";
 import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
+import ExplainCompletion from "../openai/ExplainCompletion.js";
 import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
-import { Explanation } from "../models/explanation.js";
-import ExplainCompletion from "../openai/ExplainCompletion.js";
-import { authorize } from "../auth/module.js";
 
 
 export class MessagesResource extends Resource {
 
     @post('/')
     async postMessage(ctx: Context) {
-        await authorize(ctx);
 
         const payload = (await ctx.payload).json;
 
@@ -117,11 +115,9 @@ class MessageResource extends Resource {
 
         if (expl && expl.content) {
             // stream the existing content
-            const chunks = expl.content.split(/\b/);
-            for (const chunk of chunks) {
-                session.push(chunk);
-            }
+            session.push(expl.content);
         } else { // we need to complete the explanation
+
             const message = await MessageModel.findById(msgId).populate<{
                 conversation: IConversation,
             }>('conversation');
@@ -144,6 +140,7 @@ class MessageResource extends Resource {
             if (!expl) {
                 // create the explanation object
                 expl = await Explanation.create({
+                    //TODO user and account
                     topic: message.content,
                     conversation: message.conversation,
                     message: message.id,

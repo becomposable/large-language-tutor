@@ -1,11 +1,13 @@
 import { Resource, Router, get } from "@koa-stack/server";
-import { Context } from "koa";
+import { Context, Next } from "koa";
 import Env from "../env.js";
 import ConversationsResource from "./conversations.js";
 import { DictionnaryResource } from "./dictionnary.js";
 import { ExplainResource } from "./explain.js";
 import { MessagesResource } from "./messages.js";
 import { StoriesResource } from "./stories.js";
+import { authorize } from "../auth/module.js";
+//import { authMiddleware, authorize } from "../auth/module.js";
 
 //TODO put in a shared project
 export interface IUserPayload {
@@ -88,6 +90,14 @@ export default class ApiRoot extends Resource {
 
     setup(router: Router) {
         super.setup(router);
+
+        router.use(async (ctx: Context, next: Next) => {
+            // resources which are not used for streaming requires a login
+            if (!ctx.path.endsWith('/stream')) {
+                await authorize(ctx);
+            }
+            return await next();
+        })
 
         // this will match all resources rooted in /users like /users or /users/john
         //router.use('/users', Users);
