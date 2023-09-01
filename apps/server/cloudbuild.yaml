@@ -45,6 +45,10 @@ steps:
       - '--image=us.gcr.io/$PROJECT_ID/lang-tutor-app:$SHORT_SHA'
       - '--region=$_DEPLOY_REGION'
       - '--set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID'
+      - '--update-secrets=DB_URL=DB_URL:latest'
+      - '--update-secrets=DB_USERNAME=DB_USERNAME:latest'
+      - '--update-secrets=DB_PASSWORD=DB_PASSWORD:latest'
+      - '--update-secrets=OPENAI_API_KEY=OPENAI_API_KEY:latest'
     id: deploy-app
     waitFor:
       - push-app
