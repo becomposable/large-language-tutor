@@ -1,49 +1,16 @@
-import { JSONSchema4 } from "json-schema";
 import { IStory } from "../models/stories.js";
 import { CompletionBase } from "./index.js";
 import OpenAI from "openai";
+import { QuestionAndAnswer, QuestionsAndAnswersCheckSchema } from "@language-tutor/types";
 
-export interface IQA {
-    question: string,
-    answer: string,
-}
-
-export const qaCheckSchema: JSONSchema4 = {
-    type: "object",
-    properties: {
-        answers: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    question: {
-                        type: "string",
-                    },
-                    is_correct: {
-                        description: "Is the answer correct?",
-                        type: "boolean",
-                    },
-                    correct_answer: {
-                        description: "The correct answer if the user's answer is incorrect",
-                        type: "string",
-                    },
-                },
-            }
-        },
-        score: {
-            description: "The final score of the user",
-            type: "number",
-        }
-    }
-}
 
 export class AnswerChecker extends CompletionBase<AnswerChecker> {
 
     story: IStory;
-    answers: IQA[];
+    answers: QuestionAndAnswer[];
 
-    constructor(story: IStory, answers: IQA[], userLanguage?: string) {
-        super(story.language, userLanguage, qaCheckSchema);
+    constructor(story: IStory, answers: QuestionAndAnswer[], userLanguage?: string) {
+        super(story.language, userLanguage, QuestionsAndAnswersCheckSchema);
         this.story = story;
         this.answers = answers;
     }

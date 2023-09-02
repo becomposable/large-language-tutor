@@ -4,15 +4,14 @@
 import { Resource, get, post } from "@koa-stack/server";
 import SSE from "better-sse";
 import { Context } from "koa";
-import { IStory, Story } from "../models/stories.js";
+import { Story } from "../models/stories.js";
 import { AnswerChecker } from "../openai/AnswerChecker.js";
 import { QuestionsGenerator } from "../openai/QuestionGenerator.js";
 import StoryGenerator from "../openai/StoryGenerator.js";
-import { jsonDoc, jsonDocs, requestAccountId, requestAccountId, requestUser } from "./utils.js";
-import { CompletionBase } from "../openai/index.js";
+import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 import { MessageStatus } from "../models/message.js";
 import ServerError from "../errors/ServerError.js";
-import { QuestionAndAnswer, QuestionsAndAnswersCheckSchema, QuestionsSchema } from "@language-tutor/types";
+import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
 
 function parseStoryResult(result: string) {
     result = result.trim()  
@@ -155,13 +154,22 @@ export class StoriesResource extends Resource {
             ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
         }
 
-        const questions = await generateQuestions(story);
+        const questionsGenerator = new QuestionsGenerator(story);
+        const res = await questionsGenerator.execute();
 
-        ctx.body = questions;
+        ctx.body = {
+            data: res.questions as Question[],
+            type: 'Questions',
+            generated_at: new Date(),
+        };
         ctx.status = 200;
 
     }
 
+    /**
+     * Verify the answers to the questions
+     * @param ctx
+     */
     @post('/:storyId/verify_answers')
     async verifyAnswers(ctx: Context) {
 
@@ -171,25 +179,22 @@ export class StoriesResource extends Resource {
             ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
         }
 
-        const answers = payload.answers as QuestionAndAnswer[];
-        const checker = new AnswerChecker(story, answers);
-        const result = await checker.execute();
+        const answers = payload.data as QuestionAndAnswer[];
 
-        ctx.body = result;
+        if (!answers || answers.length === 0) {
+            ctx.throw(400, `No answers provided`);
+        }
+
+        const checker = new AnswerChecker(story, answers);
+        const result: QACheck = await checker.execute();
+
+        ctx.body = { 
+            data: result, 
+            type: 'QACheck',
+            generated_at: new Date(),
+        };
         ctx.status = 200;
 
     }
 
 }
-
-
-async function generateQuestions(story: IStory): Promise<any> {
-    const questionsGenerator = new QuestionsGenerator(story);
-    const res = await questionsGenerator.execute();
-    const questions = res.choices[0]?.message.function_call?.arguments;
-
-    return questions;
-}
-
-
-

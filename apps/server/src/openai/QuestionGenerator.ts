@@ -1,31 +1,14 @@
-import { JSONSchema4 } from "json-schema";
 import { IStory } from "../models/stories.js";
 import { CompletionBase } from "./index.js";
 import OpenAI from "openai";
-
-export const questionsSchema: JSONSchema4 = {
-    type: "object",
-    properties: {
-        questions: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    question: {
-                        type: "string",
-                    },
-                },
-            }
-        }
-    }
-}
+import { QuestionsSchema } from "@language-tutor/types";
 
 export class QuestionsGenerator extends CompletionBase<QuestionsGenerator> {
 
     story: IStory;
 
     constructor(story: IStory) {
-        super(story.language, undefined, questionsSchema);
+        super(story.language, undefined, QuestionsSchema);
         this.story = story;
     }
 
@@ -46,10 +29,6 @@ export class QuestionsGenerator extends CompletionBase<QuestionsGenerator> {
 
     getUserMessages(): Promise<OpenAI.Chat.Completions.ChatCompletionMessage[] | undefined> {
         return Promise.resolve(undefined);
-    }
-
-    parseResult(questions: string): string[] {
-        return questions.split('\n').map(q => q.replace(/Q[0-9]{1}: /, ''));
     }
 
 }

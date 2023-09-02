@@ -21,7 +21,7 @@ export interface Story {
 
 //create typescript interface for the above schema
 export interface QACheck {
-    check: QuestionAndAnswerCheck[],
+    answers: QuestionAndAnswerCheck[],
     score: number,
 }
 
@@ -66,6 +66,10 @@ export const QuestionsAndAnswersCheckSchema: JSONSchema4 = {
                 properties: {
                     question: {
                         type: "string",
+                    },
+                    answer: {
+                        type: "string",
+                        description: "The user's answer to the question",
                     },
                     is_correct: {
                         description: "Is the answer correct?",
