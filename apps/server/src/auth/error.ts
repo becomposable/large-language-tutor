@@ -3,11 +3,16 @@ export class AuthError extends Error {
     expose = true; // this will expose the error to the client - see error handling in @koa-stack/server
     constructor(message: string, statusCode: number) {
         super(message);
+        this.name = 'AuthError';
         this.statusCode = statusCode;
     }
 
     static notAuthorized() {
         return new AuthError('Unauthorized', 401);
+    }
+
+    static noMatchingUserFound() {
+        return new AuthError('No matching user found', 401);
     }
 
     static notSupported() {

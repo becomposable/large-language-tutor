@@ -1,17 +1,14 @@
 import { Resource, Router, get, post } from "@koa-stack/server";
 import { Context } from "koa";
-import { ConversationModel } from "../models/conversation.js";
-import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
-import { MessageModel } from "../models/message.js";
 import { ObjectId } from "mongodb";
-import { authorize } from "../auth/module.js";
+import { ConversationModel } from "../models/conversation.js";
+import { MessageModel } from "../models/message.js";
+import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
 
 class ConversationResource extends Resource {
     @get('/')
     async getConversation(ctx: Context) {
-        await authorize(ctx);
-
         const id = ctx.params.conversationId;
         const result = await ConversationModel.findById(id);
         if (!result) {
@@ -24,8 +21,6 @@ class ConversationResource extends Resource {
 
     @get('/messages')
     async getMessages(ctx: Context) {
-        await authorize(ctx);
-
         //TODO last not yet implemented
         //const last = ctx.query.last; // last message id - to be used to appky the tail
         // if tail is specifid we only return the last ${tail} messages

@@ -1,7 +1,9 @@
 import { Context } from "koa";
 import { Document } from "mongoose";
-import { authorize } from "../auth/module.js";
+import { Principal } from "../auth/module.js";
 import Env from "../env.js";
+import { AuthUser } from "../auth/index.js";
+import { AuthError } from "../auth/error.js";
 
 export function tryRequestAccountId(ctx: Context) {
     //return (ctx.header[OrgHeader] || ctx.query.org) as string;
@@ -13,14 +15,24 @@ export function requestAccountId(ctx: Context) {
     if (!account) ctx.throw(400, `Expected an ${Env.xAccountHeader} header`);
 }
 
-export async function requestUser(ctx: Context) {
-    const principal = await authorize(ctx);
-    const user = await principal.getUser();
-    return user.doc;
+export function tryRequestPrincipal(ctx: Context) {
+    return ctx.state.principal as Principal<AuthUser> || null;
 }
 
-export function requestLogin(ctx: Context) {
-    return authorize(ctx);
+export function requestPrincipal(ctx: Context) {
+    const principal = tryRequestPrincipal(ctx);
+    if (!principal) {
+        throw AuthError.notAuthorized();
+    }
+    return principal;
+}
+
+export async function requestUser(ctx: Context) {
+    const user = await requestPrincipal(ctx).getUser();
+    if (!user) {
+        throw AuthError.noMatchingUserFound();
+    }
+    return user.doc;
 }
 
 export function jsonDoc(doc: Document, virtuals?: boolean) {

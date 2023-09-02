@@ -3,19 +3,17 @@ import SSE from "better-sse";
 import { Context } from "koa";
 import ServerError from "../errors/ServerError.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
-import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
-import { ConversationCompletion } from "../openai/index.js";
-import { jsonDoc, jsonDocs } from "./utils.js";
 import { Explanation } from "../models/explanation.js";
+import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
 import ExplainCompletion from "../openai/ExplainCompletion.js";
-import { authorize } from "../auth/module.js";
+import { ConversationCompletion } from "../openai/index.js";
+import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
 
 export class MessagesResource extends Resource {
 
     @post('/')
     async postMessage(ctx: Context) {
-        await authorize(ctx);
 
         const payload = (await ctx.payload).json;
 
@@ -105,6 +103,55 @@ class MessageResource extends Resource {
         ctx.status = 200;
     }
 
+    /**
+     * This will return the explanation if an explanation already exists otherwise 
+     * it will create a new empty one and return it. The user will be able to complete 
+     * the explanation by calling the explanation stream endpoint
+     * @param ctx 
+     */
+    @post('/explain')
+    async explainMessage(ctx: Context) {
+        const accountId = requestAccountId(ctx);
+        const user = await requestUser(ctx);
+
+        const msgId = ctx.params.messageId;
+        const msg = await MessageModel.findById(msgId).populate<{
+            conversation: IConversation,
+        }>('conversation');
+
+        if (!msg) {
+            ctx.throw(404, `Message with id ${msgId} not found`);
+        }
+
+        if (msg.status !== MessageStatus.active) {
+            ctx.throw(404, `Message with id ${msgId} must be in active state`);
+        }
+
+        let expl = await Explanation.findOne({ message: msgId });
+
+        if (!expl) {
+            // create the explanation object
+            expl = await Explanation.create({
+                account: accountId,
+                user: user._id,
+                status: MessageStatus.created,
+                topic: msg.content,
+                message: msg.id,
+                content: undefined,
+                study_language: msg.conversation.study_language,
+                user_language: msg.conversation.user_language,
+            });
+        }
+
+        ctx.body = jsonDoc(expl);
+        ctx.status = 200;
+    }
+
+
+    /**
+     * @deprecated this endpoint is depreacted and should be removed
+     * @param ctx 
+     */
     @get('/explain/stream')
     async streamExplainMessage(ctx: Context) {
         const msgId = ctx.params.messageId;
@@ -117,11 +164,9 @@ class MessageResource extends Resource {
 
         if (expl && expl.content) {
             // stream the existing content
-            const chunks = expl.content.split(/\b/);
-            for (const chunk of chunks) {
-                session.push(chunk);
-            }
+            session.push(expl.content);
         } else { // we need to complete the explanation
+
             const message = await MessageModel.findById(msgId).populate<{
                 conversation: IConversation,
             }>('conversation');
@@ -131,7 +176,7 @@ class MessageResource extends Resource {
             if (!message.content) {
                 ctx.throw(400, 'Message has no content')
             }
-            const explRequest = new ExplainCompletion(message.conversation, message.content, msgId);
+            const explRequest = new ExplainCompletion(message.conversation.study_language, message.conversation.user_language, message.content, msgId);
             const stream = await explRequest.stream();
             const chunks = [];
             for await (const data of stream) {
@@ -144,6 +189,7 @@ class MessageResource extends Resource {
             if (!expl) {
                 // create the explanation object
                 expl = await Explanation.create({
+                    //TODO user and account
                     topic: message.content,
                     conversation: message.conversation,
                     message: message.id,
