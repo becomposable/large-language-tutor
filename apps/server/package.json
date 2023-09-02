@@ -20,6 +20,7 @@
         "@types/json-schema": "^7.0.12"
     },
     "dependencies": {
+        "@language-tutor/types": "^1.0.0",
         "@koa-stack/server": "^0.6.6",
         "@koa/cors": "^4.0.0",
         "better-sse": "^0.9.0",

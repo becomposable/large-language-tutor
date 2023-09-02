@@ -16,6 +16,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@language-tutor/kuroshiro": "1.2.0",
+    "@language-tutor/types": "1.0.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/react": "^7.66.0",
     "dayjs": "^1.11.9",

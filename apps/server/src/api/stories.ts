@@ -8,12 +8,12 @@ import OpenAI from "openai";
 import { IStory, Story } from "../models/stories.js";
 import { CompletionBase } from "../openai/index.js";
 import { jsonDoc, jsonDocs } from "./utils.js";
-import { JSONSchema4 } from "json-schema";
 import { MessageStatus } from "../models/message.js";
 import ServerError from "../errors/ServerError.js";
+import { QuestionAndAnswer, QuestionsAndAnswersCheckSchema, QuestionsSchema } from "@language-tutor/types";
 
 function parseStoryResult(result: string) {
-    result = result.trim();
+    result = result.trim()  
     const eol = result.indexOf('\n');
     if (eol < 0) {
         throw new ServerError(`Failed to get title and content from story: "${result}"'`, 500);
@@ -159,7 +159,7 @@ export class StoriesResource extends Resource {
             ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
         }
 
-        const answers = payload.answers as IQA[];
+        const answers = payload.answers as QuestionAndAnswer[];
         const checker = new AnswerChecker(story, answers);
         const result = await checker.execute();
 
@@ -218,30 +218,12 @@ class StoryGenerator extends CompletionBase<StoryGenerator> {
 
 }
 
-
-const questionsSchema: JSONSchema4 = {
-    type: "object",
-    properties: {
-        questions: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    question: {
-                        type: "string",
-                    },
-                },
-            }
-        }
-    }
-}
-
 class QuestionsGenerator extends CompletionBase<QuestionsGenerator> {
 
     story: IStory;
 
     constructor(story: IStory) {
-        super(story.language, undefined, questionsSchema);
+        super(story.language, undefined, QuestionsSchema);
         this.story = story;
     }
 
@@ -270,47 +252,13 @@ class QuestionsGenerator extends CompletionBase<QuestionsGenerator> {
 
 }
 
-interface IQA {
-    question: string,
-    answer: string,
-}
-
-const qaCheckSchema: JSONSchema4 = {
-    type: "object",
-    properties: {
-        answers: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    question: {
-                        type: "string",
-                    },
-                    is_correct: {
-                        description: "Is the answer correct?",
-                        type: "boolean",
-                    },
-                    correct_answer: {
-                        description: "The correct answer if the user's answer is incorrect",
-                        type: "string",
-                    },
-                },
-            }
-        },
-        score: {
-            description: "The final score of the user",
-            type: "number",
-        }
-    }
-}
-
 class AnswerChecker extends CompletionBase<AnswerChecker> {
 
     story: IStory;
-    answers: IQA[];
+    answers: QuestionAndAnswer[];
 
-    constructor(story: IStory, answers: IQA[], userLanguage?: string) {
-        super(story.language, userLanguage, qaCheckSchema);
+    constructor(story: IStory, answers: QuestionAndAnswer[], userLanguage?: string) {
+        super(story.language, userLanguage, QuestionsAndAnswersCheckSchema);
         this.story = story;
         this.answers = answers;
     }

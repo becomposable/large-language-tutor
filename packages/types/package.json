@@ -1,0 +1,25 @@
+{
+    "name": "@language-tutor/types",
+    "version": "1.0.0",
+    "description": "Types for language tutor, can be shared client and server side",
+    "private": true,
+    "scripts": {
+        "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'",
+        "build": "tsc",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+        "dev": "tsc -w"
+    },
+    "main": "./dist/index.js",
+    "source": "./src/index.ts",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist/**"
+      ],
+    "dependencies": {
+        "json-schema": "^0.2.3"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.2",
+        "tsconfig": "*"
+    }
+}

@@ -6,6 +6,7 @@ import { IStory, MessageStatus } from "../../types";
 import JpText from "../../components/JpText";
 import { useState } from "react";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
+import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
 
 
 interface IStreamedContent {
@@ -21,7 +22,6 @@ function parseStoryResult(result: string): IStreamedContent {
         return { title: result.substring(0, eol).trim(), content: result.substring(eol + 1) }
     }
 }
-
 
 function streamStory(url: string,
     setStreamedContent: (content: IStreamedContent) => void,
@@ -51,6 +51,8 @@ interface StoryViewProps {
 export default function StoryView({ storyId }: StoryViewProps) {
     const { client } = useUserSession();
     const [streamedContent, setStreamedContent] = useState<IStreamedContent>({ title: '', content: '' });
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [qaCheck, setQaCheck] = useState<QACheck|undefined>(undefined);
 
     const { data: story, error, setData } = useFetch<IStory>(() => {
         return client.get(`/stories/${storyId}`).then(story => {
@@ -63,6 +65,20 @@ export default function StoryView({ storyId }: StoryViewProps) {
     }, {
         deps: [storyId]
     });
+
+
+    const fetchQuestions = () => {
+        client.get(`/stories/${storyId}/questions`).then(questions => {
+            setQuestions(questions);
+        })
+    }
+
+    const verifyAnswer = (answers: QuestionAndAnswer[]) => {
+        client.post(`/stories/${storyId}/verify_answers`, {payload: answers}).then(check => {
+            setQaCheck(check);
+        })
+    }
+
 
     if (error) {
         return <ErrorAlert title={"Cannot fetch story"}>{error.message}</ErrorAlert>
@@ -116,13 +132,10 @@ interface StoryContentProps {
 function StoryContent({ title, content, language }: StoryContentProps) {
     return (
         <VStack w='100%' px='4' align='start' justify='start'>
-            <Flex justify='space-between' align='left' w='100%' >
+            <Flex width="70%">
                 <Heading size='md' display='flex' alignItems='left'>
                     <Box>{title}</Box>
                 </Heading>
-                <Box>Language: <b>{language}</b></Box>
-            </Flex>
-            <Flex>
                 <Box>{renderTextToHtml(content, language)}</Box>
             </Flex>
         </VStack >
