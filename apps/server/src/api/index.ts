@@ -1,4 +1,4 @@
-import { Resource, Router, get } from "@koa-stack/router";
+import { Resource, filters, get, routes } from "@koa-stack/router";
 import { Context, Next } from "koa";
 import Env from "../env.js";
 import ConversationsResource from "./conversations.js";
@@ -24,6 +24,20 @@ export interface IExplainPayload extends IUserPayload {
     content: string;
 }
 
+@routes({
+    '/conversations': ConversationsResource,
+    '/messages': MessagesResource,
+    '/explain': ExplainResource,
+    '/stories': StoriesResource,
+    '/dictionnary': DictionnaryResource,
+})
+@filters(async (ctx: Context, next: Next) => {
+    // resources which are not used for streaming requires a login
+    if (!ctx.path.endsWith('/stream')) {
+        await authorize(ctx);
+    }
+    return await next();
+})
 export default class ApiRoot extends Resource {
 
     @get('/')
@@ -87,26 +101,6 @@ export default class ApiRoot extends Resource {
     //     ctx.body = { answer: result };
 
     // }
-
-    setup(router: Router) {
-        super.setup(router);
-
-        router.use(async (ctx: Context, next: Next) => {
-            // resources which are not used for streaming requires a login
-            if (!ctx.path.endsWith('/stream')) {
-                await authorize(ctx);
-            }
-            return await next();
-        })
-
-        // this will match all resources rooted in /users like /users or /users/john
-        //router.use('/users', Users);
-        router.mount('/conversations', ConversationsResource);
-        router.mount('/messages', MessagesResource);
-        router.mount('/explain', ExplainResource);
-        router.mount('/stories', StoriesResource);
-        router.mount('/dictionnary', DictionnaryResource);
-    }
 
 
 }
