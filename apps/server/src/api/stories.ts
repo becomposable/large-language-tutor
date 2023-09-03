@@ -10,7 +10,7 @@ import { QuestionsGenerator } from "../openai/QuestionGenerator.js";
 import StoryGenerator from "../openai/StoryGenerator.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 import { MessageStatus } from "../models/message.js";
-import ServerError from "../errors/ServerError.js";
+import { ServerError } from "@koa-stack/router";
 import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
 
 function parseStoryResult(result: string) {
