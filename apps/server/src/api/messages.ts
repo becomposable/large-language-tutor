@@ -1,4 +1,4 @@
-import { Resource, Router, get, post } from "@koa-stack/server";
+import { Resource, Router, get, post } from "@koa-stack/router";
 import SSE from "better-sse";
 import { Context } from "koa";
 import ServerError from "../errors/ServerError.js";

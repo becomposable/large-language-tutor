@@ -1,9 +1,9 @@
 import { Context } from "koa";
 import { Document } from "mongoose";
-import { Principal } from "../auth/module.js";
+import { Principal } from "@koa-stack/auth";
 import Env from "../env.js";
 import { AuthUser } from "../auth/index.js";
-import { AuthError } from "../auth/error.js";
+import { AuthError } from "@koa-stack/auth";
 
 export function tryRequestAccountId(ctx: Context) {
     //return (ctx.header[OrgHeader] || ctx.query.org) as string;

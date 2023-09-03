@@ -1,4 +1,4 @@
-import { Resource, Router, get } from "@koa-stack/server";
+import { Resource, Router, get } from "@koa-stack/router";
 import { Context, Next } from "koa";
 import Env from "../env.js";
 import ConversationsResource from "./conversations.js";
@@ -6,7 +6,7 @@ import { DictionnaryResource } from "./dictionnary.js";
 import { ExplainResource } from "./explain.js";
 import { MessagesResource } from "./messages.js";
 import { StoriesResource } from "./stories.js";
-import { authorize } from "../auth/module.js";
+import { authorize } from "@koa-stack/auth";
 //import { authMiddleware, authorize } from "../auth/module.js";
 
 //TODO put in a shared project

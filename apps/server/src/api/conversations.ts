@@ -1,4 +1,4 @@
-import { Resource, Router, get, post } from "@koa-stack/server";
+import { Resource, Router, get, post } from "@koa-stack/router";
 import { Context } from "koa";
 import { ObjectId } from "mongodb";
 import { ConversationModel } from "../models/conversation.js";

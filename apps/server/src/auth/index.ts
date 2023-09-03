@@ -1,10 +1,10 @@
-import { Resource, get, post } from "@koa-stack/server";
+import { Resource, get, post } from "@koa-stack/router";
 import { Context } from "koa";
 import { jsonDoc, jsonDocs } from "../api/utils.js";
 import { UserDocument, UserModel, findUserByEmail } from "../models/user.js";
-import { FirebaseAuth, FirebasePrincipal } from "./firebase.js";
-import { IAuthUser, Principal, authorize } from "./module.js";
-import { AuthError } from "./error.js";
+import { FirebaseAuth, FirebasePrincipal } from "@koa-stack/auth-firebase";
+import { IAuthUser, Principal, authorize } from "@koa-stack/auth";
+import { AuthError } from "@koa-stack/auth";
 import { AccountDocument, AccountModel, AccountRoles } from "../models/account.js";
 
 export class AuthUser implements IAuthUser {

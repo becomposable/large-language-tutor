@@ -1,4 +1,4 @@
-import { ErrorInfo } from "@koa-stack/server";
+import { ErrorInfo } from "@koa-stack/router";
 import { initializeApp } from 'firebase-admin/app';
 import { Context } from "koa";
 import TutorServer from "./TutorServer.js";
