@@ -10,7 +10,7 @@ import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkin
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
 import { IStory, MessageStatus } from "../../types";
-import { ExplainContext } from "../chat/ExplainContextProvider";
+import { ExplainContext } from "../explain/ExplainContextProvider";
 
 
 interface IStreamedContent {

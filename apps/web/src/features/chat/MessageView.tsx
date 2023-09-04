@@ -6,7 +6,7 @@ import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkin
 import { IConversation, IMessage, Languages, MessageOrigin, MessageStatus } from "../../types";
 import MessageBox from "./MessageBox";
 import { useContext } from "react";
-import { ExplainContext } from "./ExplainContextProvider";
+import { ExplainContext } from "../explain/ExplainContextProvider";
 
 
 interface MessageViewProps {

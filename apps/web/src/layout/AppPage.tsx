@@ -13,7 +13,7 @@ import SidebarContent from './SideBarContent';
 import { useUserSession } from '../context/UserSession';
 import AnonymousPage from './AnonymousPage';
 import React from 'react';
-import { ExplainContextProvider } from '../features/chat/ExplainContextProvider';
+import { ExplainContextProvider } from '../features/explain/ExplainContextProvider';
 
 
 

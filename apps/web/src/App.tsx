@@ -8,6 +8,7 @@ import ConversationsPage from './pages/ConversationsPage'
 import DashboardPage from './pages/DashboardPage'
 import StoriesPage from './pages/StoriesPage'
 import StoryPage from './pages/StoryPage'
+import ExplainPage from './pages/ExplainPage'
 
 
 const router = createBrowserRouter([
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
     {
         path: '/stories/:storyId',
         Component: StoryPage,
+    },
+    {
+        path: '/explain',
+        Component: ExplainPage,
     }
 ]);
 

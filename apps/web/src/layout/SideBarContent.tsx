@@ -25,6 +25,9 @@ const LinkItems: Array<LinkItemProps> = [
         name: 'Stories', icon: BsBodyText, href: '/stories',
         action: <CreateStoryModal />
     },
+    {
+        name: 'Explain Anything', icon: BsBodyText, href: '/explain',
+    },
     // {
     //     name: 'Settings', icon: FiSettings, href: '/settings'
     // },
