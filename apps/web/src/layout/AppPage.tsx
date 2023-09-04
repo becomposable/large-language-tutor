@@ -13,6 +13,7 @@ import SidebarContent from './SideBarContent';
 import { useUserSession } from '../context/UserSession';
 import AnonymousPage from './AnonymousPage';
 import React from 'react';
+import { ExplainContextProvider } from '../features/chat/ExplainContextProvider';
 
 
 
@@ -53,7 +54,11 @@ function PageContent({ children }: PageContentProps) {
         return <Center mt='20'><Spinner /></Center>;
     }
     if (user) {
-        return <>{children}</>
+        return (
+            <ExplainContextProvider>
+                {children}
+            </ExplainContextProvider>
+        )
     }
     return (
         <AnonymousPage />

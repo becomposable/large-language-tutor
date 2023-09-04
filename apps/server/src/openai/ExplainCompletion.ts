@@ -11,7 +11,7 @@ export default class ExplainCompletion extends CompletionBase<ExplainCompletion>
         super(studyLaguage, userLanguage);
         this.content = content;
         this.messageId = messageId;
-        this.context = messageId;
+        this.context = context;
     }
 
     getAppInstruction(): string {

@@ -1,11 +1,12 @@
 import { Avatar, Box, Flex, HStack, Heading } from "@chakra-ui/react";
-import { MdOutlineVolumeUp } from "react-icons/md";
+import { MdLightbulbOutline, MdOutlineVolumeUp } from "react-icons/md";
 import JpText from "../../components/JpText";
 import StyledIconButton from "../../components/StyledIconButton";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
 import { IConversation, IMessage, Languages, MessageOrigin, MessageStatus } from "../../types";
-import ExplainModal from "./ExplainModal";
 import MessageBox from "./MessageBox";
+import { useContext } from "react";
+import { ExplainContext } from "./ExplainContextProvider";
 
 
 interface MessageViewProps {
@@ -15,6 +16,7 @@ interface MessageViewProps {
 export default function MessageView({ message, conversation }: MessageViewProps) {
     const isAssistant = message.origin === MessageOrigin.assistant;
     const title = isAssistant ? 'Assistant:' : 'You:';
+    const doExplain = useContext(ExplainContext);
 
     const onPronunciation = () => {
         window.alert('TODO');
@@ -29,6 +31,7 @@ export default function MessageView({ message, conversation }: MessageViewProps)
     const isPending = message.status === MessageStatus.pending;
 
     const isJp = conversation.study_language === Languages.Japanese;
+    console.log("call depuis MessageView")
 
     return (
         <MessageBox>
@@ -40,7 +43,7 @@ export default function MessageView({ message, conversation }: MessageViewProps)
                 {
                     isActive && <HStack>
                         <StyledIconButton title='Pronunciation' icon={<MdOutlineVolumeUp />} onClick={onPronunciation} />
-                        <ExplainModal messageId={message.id} />
+                        <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({contentToExplain: message.content, messageId: message.id})} />
                     </HStack>
                 }
             </Flex>

@@ -95,11 +95,11 @@ export class ExplainResource extends Resource {
         if (blocking) {
             const explainRequest = new ExplainCompletion(studyLanguage, userLanguage, topic, messageId);
             const result = await explainRequest.execute();
-            content = result.join(' ');
+            content = result;
         }
 
         const explanation = await Explanation.create({
-            status: blocking ? MessageStatus.active : MessageStatus.pending,
+            status: blocking ? MessageStatus.active : MessageStatus.created,
             topic: topic,
             content: content,
             message: messageId,

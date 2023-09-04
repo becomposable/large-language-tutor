@@ -1,13 +1,16 @@
-import { Box, Button, Center, Flex, Heading, Input, Spacer, Spinner, Stack, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Center, Flex, HStack, Heading, Input, Spacer, Spinner, Stack, Text, VStack } from "@chakra-ui/react";
+import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
+import { ErrorBoundary } from "@sentry/react";
+import { useContext, useState } from "react";
+import { MdLightbulbOutline } from "react-icons/md";
 import ErrorAlert from "../../components/ErrorAlert";
+import JpText from "../../components/JpText";
+import StyledIconButton from "../../components/StyledIconButton";
+import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
 import { IStory, MessageStatus } from "../../types";
-import JpText from "../../components/JpText";
-import { useState } from "react";
-import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
-import { QACheck, Question, QuestionAndAnswer, ResponsePayload } from "@language-tutor/types";
-import { ErrorBoundary } from "@sentry/react";
+import { ExplainContext } from "../chat/ExplainContextProvider";
 
 
 interface IStreamedContent {
@@ -67,7 +70,6 @@ export default function StoryView({ storyId }: StoryViewProps) {
     }, {
         deps: [storyId]
     });
-
 
     const fetchQuestions = () => {
         setThinking(true);
@@ -276,24 +278,38 @@ interface StoryContentProps {
     language: string;
 }
 function StoryContent({ title, content, language }: StoryContentProps) {
+
+
     return (
         <VStack w='100%' px='4' align='start' justify='start'>
             <Flex direction={"column"} width="100%">
                 <Heading size='md' display='flex' alignItems='left'>
                     <Box>{title}</Box>
                 </Heading>
-                <Box>{renderTextToHtml(content, language)}</Box>
+                <Box>
+                <RenderTextToHtml text={content} language={language} />
+                </Box>
             </Flex>
         </VStack >
     )
 }
 
-function renderTextToHtml(text: string, language: string) {
+function RenderTextToHtml({ text, language }: { text: string, language: string }) {
+
+    const doExplain = useContext(ExplainContext);
+
     return text.split('\n').map((line, i) => {
+        if (line === '') return;
         return (
-            (language === 'JP' || language === 'JA') ?
-                <Text padding={1} key={i}><JpText text={line} /></Text>
-                : <Text padding={1} key={i}>{line}</Text>
+            <HStack key={i} justify="space-between" align="start">
+                <Text border="" padding={2} key={i}>
+                    {(language === 'JP' || language === 'JA') ? 
+                    <JpText text={line} />
+                    : line
+                    }
+                </Text>
+                <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({contentToExplain: line})} />
+            </HStack>
         )
     })
 }
