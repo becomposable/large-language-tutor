@@ -1,7 +1,7 @@
 /**
  * Manage Story generation
  */
-import { Resource, get, post } from "@koa-stack/server";
+import { Resource, get, post } from "@koa-stack/router";
 import SSE from "better-sse";
 import { Context } from "koa";
 import { Story } from "../models/stories.js";
@@ -10,11 +10,11 @@ import { QuestionsGenerator } from "../openai/QuestionGenerator.js";
 import StoryGenerator from "../openai/StoryGenerator.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 import { MessageStatus } from "../models/message.js";
-import ServerError from "../errors/ServerError.js";
+import { ServerError } from "@koa-stack/router";
 import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
 
 function parseStoryResult(result: string) {
-    result = result.trim()  
+    result = result.trim()
     const eol = result.indexOf('\n');
     if (eol < 0) {
         throw new ServerError(`Failed to get title and content from story: "${result}"'`, 500);
@@ -188,8 +188,8 @@ export class StoriesResource extends Resource {
         const checker = new AnswerChecker(story, answers);
         const result: QACheck = await checker.execute();
 
-        ctx.body = { 
-            data: result, 
+        ctx.body = {
+            data: result,
             type: 'QACheck',
             generated_at: new Date(),
         };

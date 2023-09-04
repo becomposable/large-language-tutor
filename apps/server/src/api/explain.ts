@@ -1,7 +1,7 @@
-import { Resource, get, post } from "@koa-stack/server";
+import { Resource, get, post } from "@koa-stack/router";
 import SSE from "better-sse";
 import { Context } from "koa";
-import ServerError from "../errors/ServerError.js";
+import { ServerError } from "@koa-stack/router";
 import { Explanation } from "../models/explanation.js";
 import { MessageModel, MessageStatus } from "../models/message.js";
 import ExplainCompletion from "../openai/ExplainCompletion.js";

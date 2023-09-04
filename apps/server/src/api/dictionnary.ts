@@ -1,4 +1,4 @@
-import { Resource, get } from "@koa-stack/server";
+import { Resource, get } from "@koa-stack/router";
 import { Context } from "koa";
 import WordDefinition from "../openai/dictionnaryCompletions.js";
 import { Definition, DictionnaryDefinition } from "../models/dictionnary.js";
@@ -16,13 +16,13 @@ export class DictionnaryResource extends Resource {
 
         console.log(`Getting definition for ${word} in ${wordLanguage} for ${userLanguage}`);
 
-        const cachedWord = await DictionnaryDefinition.findOne({ 
-            language: wordLanguage, 
+        const cachedWord = await DictionnaryDefinition.findOne({
+            language: wordLanguage,
             definitionLanguage: userLanguage,
             $or: [
-                {word: word},
-                {normalized_form: word},
-                {match_also: word}
+                { word: word },
+                { normalized_form: word },
+                { match_also: word }
             ]
         });
 
@@ -38,12 +38,12 @@ export class DictionnaryResource extends Resource {
         }
 
         //if word exists, add it to the list of words that match this definition
-        const normalizedWord = 
-        await DictionnaryDefinition.find({normalized_form: data.normalized_form});
+        const normalizedWord =
+            await DictionnaryDefinition.find({ normalized_form: data.normalized_form });
         if (normalizedWord.length > 0) {
             await DictionnaryDefinition.updateMany(
-                {normalized_form: data.normalized_form}, 
-                {$addToSet: {match_also: data.word}}
+                { normalized_form: data.normalized_form },
+                { $addToSet: { match_also: data.word } }
             );
         } else {
             await DictionnaryDefinition.create({
@@ -62,7 +62,7 @@ export class DictionnaryResource extends Resource {
                 match_also: [data.word],
             });
         }
-        
+
         //TODO better handle variants (should be a set of words)
 
         ctx.body = data;
