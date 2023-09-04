@@ -1,4 +1,4 @@
-import { Box, Button, Heading, Input, InputGroup, Textarea, VStack } from "@chakra-ui/react";
+import { Box, Button, Heading, InputGroup, Textarea, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { ExplainStreamView } from "./ExplainStreamView";
 
@@ -14,9 +14,9 @@ export default function ExplainView({ explainId }: ExplainViewProps) {
     const content = useRef<HTMLTextAreaElement>(null);
 
     const doExplain = () => {
-        console.log("Explain: ", contentToExplain);
         setContentToExplain(undefined);
         setContentToExplain(content.current?.value);
+        console.log("Explain: ", contentToExplain);
     }
 
     useEffect(() => {

@@ -18,10 +18,10 @@ export default class ExplainCompletion extends CompletionBase<ExplainCompletion>
         return `You are a language tutor and assistant.
         The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
         Please answer in ${this.userLanguage}. 
-        Reply with a translation, an explanation of the structure of the sentence if it's a sentence or a definition of the word if it's a word.
-        If the content has mistake, please correct it and explain the mistake.
-        Please use simple words and short sentences.
-        Express if the sentence is natural or not and why, if it's not propose a better way.
+        Reply with a translation, an explanation of the structure of the sentence, or a correction of the sentence.
+        Add a mention about the language level and good options to answer.
+        If the sentence isn't natural, correct it.
+        If the content has mistake, correct it and explain the mistake.
         Finish with an advice on how to use or how to answer to the content.`;
     }
 
@@ -30,8 +30,9 @@ export default class ExplainCompletion extends CompletionBase<ExplainCompletion>
         const userMsg: OpenAI.Chat.ChatCompletionMessage = {
             role: "user",
             content: `
-            Please explain the following:
+            <content to explain>
             ${this.content}
+            <end of content>
             `,
         };
 

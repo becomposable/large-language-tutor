@@ -47,7 +47,7 @@ export function ExplainStreamView({ messageId, contentContext, contentToExplain 
             .catch(err => {
                 console.error(err);
             })
-    }, [contentContext, messageId]);
+    }, [contentToExplain, messageId]);
 
     return (
         <Box w='100%' h='100%'>
