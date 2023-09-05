@@ -1,6 +1,6 @@
 import { AddIcon } from "@chakra-ui/icons";
 import { Button, FormControl, FormLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, useDisclosure, useToast } from "@chakra-ui/react";
-import { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import LanguageSelector from "../../components/LanguageSelector";
 import StyledIconButton from "../../components/StyledIconButton";
@@ -45,9 +45,15 @@ function CreateForm({ onClose }: CreateFormProps) {
     const [userLanguage, setUserLanguage] = useState<string>('en');
     const [studyLanguage, setStudyLanguage] = useState<string>('en');
     const [isLoading, setLoading] = useState<boolean>(false);
-    const { client } = useUserSession();
+    const { client, user } = useUserSession();
     const toast = useToast({ isClosable: true, duration: 90000 });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user && user.language) {
+            setUserLanguage(user.language);
+        }
+    }, [user])
 
     const onSubmit = () => {
         setLoading(true);
