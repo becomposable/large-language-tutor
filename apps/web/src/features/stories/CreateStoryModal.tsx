@@ -1,10 +1,11 @@
 import { AddIcon } from "@chakra-ui/icons";
-import { Button, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, useDisclosure, useToast } from "@chakra-ui/react";
-import { ChangeEvent, SyntheticEvent, useState } from "react";
+import { Button, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
+import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import StyledIconButton from "../../components/StyledIconButton";
 import { Languages } from "../../types";
 import { useUserSession } from "../../context/UserSession";
 import { useNavigate } from "react-router";
+import { StoryOptions } from "@language-tutor/types";
 
 
 interface CreateStoryModalProps {
@@ -42,6 +43,7 @@ export default function CreateStoryModal({ }: CreateStoryModalProps) {
 interface CreateFormProps {
     onClose: () => void;
 }
+
 function CreateForm({ onClose }: CreateFormProps) {
     const [userLanguage, setUserLanguage] = useState<Languages>(Languages.English);
     const [studyLanguage, setStudyLanguage] = useState<Languages>(Languages.Japanese);
@@ -49,15 +51,35 @@ function CreateForm({ onClose }: CreateFormProps) {
     const [level, setLevel] = useState<string>("beginner");
     const [topic, setTopic] = useState<string>("");
     const [type, setType] = useState<string>("story");
-
+    const [options, setOptions] = useState<StoryOptions|undefined>(undefined);
     const [isLoading, setLoading] = useState<boolean>(false);
     const { client } = useUserSession();
     const toast = useToast({ isClosable: true, duration: 90000 });
     const navigate = useNavigate();
 
-    const onChangeTopic = (ev: ChangeEvent<HTMLInputElement>) => {
+    const onChangeTopic = (ev: ChangeEvent<HTMLInputElement|HTMLSelectElement>) => {
         setTopic(ev.target.value);
     }
+
+    useEffect(() => {
+
+        if (!userLanguage || !studyLanguage) {
+            return;
+        }
+
+        setLoading(true);
+        client.get('/stories/options').then(r => {
+            console.log(r);
+            setOptions(r.data);
+            setLoading(false);
+        }).catch(err => {
+            toast({
+                status: 'error',
+                title: 'Failed to fetch options',
+                description: err.message
+            })
+        })
+    }, [userLanguage, studyLanguage]);
 
     const onSubmit = () => {
         setLoading(true);
@@ -96,18 +118,25 @@ function CreateForm({ onClose }: CreateFormProps) {
                     <FormLabel>Study Language</FormLabel>
                     <SelectLanguage value={studyLanguage} onChange={setStudyLanguage} />
                 </FormControl>
+            { options ?
+                <>
                 <FormControl>
                     <FormLabel>Type</FormLabel>
-                    <SelectType value={type} onChange={setType} />
+                    <OptionsSelect value={type} options={options.types} onChange={setType} />
                 </FormControl>
                 <FormControl>
                     <FormLabel>About the topic</FormLabel>
+                    <OptionsSelect value={topic} options={options.topics} onChange={setTopic} />
+                    or type your own
                     <Input value={topic} onChange={onChangeTopic} />
                 </FormControl>
                 <FormControl>
                     <FormLabel>In the style of</FormLabel>
-                    <SelectStyle value={style} onChange={setStyle} />
+                    <OptionsSelect value={style} options={options.styles} onChange={setStyle} />
                 </FormControl>
+                </>
+                : <Spinner />
+                } 
 
             </ModalBody>
             <ModalFooter>
@@ -130,73 +159,49 @@ function SelectLanguage({ value, onChange }: SelectLanguageProps) {
     }
     return (
         <Select value={value} onChange={_onChange}>
-            <option value='Japanese'>Japanese</option>
-            <option value='English'>English</option>
-            <option value='French'>French</option>
-            <option value='Romanian'>Romanian</option>
+            <option value='JA'>Japanese</option>
+            <option value='EN'>English</option>
+            <option value='FR'>French</option>
+            <option value='RO'>Romanian</option>
+            <option value='DE'>German</option>
+            <option value='ES'>Spanish</option>
+            <option value='IT'>Italian</option>
+            <option value='PT'>Portuguese</option>
+            <option value='EL'>Greek</option>
+            <option value='BG'>Bulgarian</option>
+            <option value='CS'>Czech</option>
+            <option value='UK'>Ukrainian</option>
+            <option value='ZH'>Chinese</option>
+            <option value='KO'>Korean</option>
+            <option value='AR'>Arabic</option>
+            <option value='TR'>Turkish</option>
+            <option value='HI'>Hindi</option>
+            <option value='ID'>Indonesian</option>
+            <option value='VI'>Vietnamese</option>
+            <option value='TH'>Thai</option>
+            <option value='PL'>Polish</option>
+            <option value='NL'>Dutch</option>
+            <option value='SV'>Swedish</option>
+            <option value='FI'>Finnish</option>
+            <option value='DA'>Danish</option>
         </Select>
     )
 }
 
-interface SelectTypeProps {
+
+interface OptionsSelectProps {
     value: string;
     onChange: (value: string) => void;
-}
-function SelectType({ value, onChange }: SelectTypeProps) {
-    const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {
-        onChange(ev.target.value)
-    }
-    return (
-        <Select value={value} onChange={_onChange}>
-            <option value='story'>Story</option>
-            <option value='dialog'>Dialog</option>
-            <option value='work instructions'>Work Instructions</option>
-            <option value='math problem'>Math Problem</option>
-            <option value='novel'>Novel</option>
-        </Select>
-    )
+    options: string[];
 }
 
-interface SelectLevelProps {
-    value?: string;
-    onChange: (value: string) => void;
-}
-function SelectLevel({ value, onChange }: SelectLevelProps) {
+function OptionsSelect({ value, options, onChange }: OptionsSelectProps) {
     const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {
         onChange(ev.target.value)
     }
     return (
         <Select value={value} onChange={_onChange}>
-            <option value='advanced'>Advanced</option>
-            <option value='medium'>Medium</option>
-            <option value='beginner'>Beginner</option>
-        </Select>
-    )
-}
-
-interface SelectStyleProps {
-    value?: string;
-    onChange: (value: string) => void;
-}
-function SelectStyle({ value, onChange }: SelectStyleProps) {
-    const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {
-        onChange(ev.target.value)
-    }
-    return (
-        <Select value={value} onChange={_onChange}>
-            <option value='André Malraux'>André Malraux</option>
-            <option value='Federico García Lorca'>Federico García Lorca</option>
-            <option value='Alexandre Dumas'>Alexandre Dumas</option>
-            <option value='John Steinbeck'>John Steinbeck</option>
-            <option value='Victor Hugo'>Victor Hugo</option>
-            <option value='Harold Pinchbeck'>Harold Pinchbeck</option>
-            <option value='Eminem'>Eminem</option>
-            <option value='Snoop Dogg'>Snoop Dogg</option>
-            <option value='30 years old office worker'>30 years old office worker</option>
-            <option value='40 years old office worker'>40 years old office worker</option>
-            <option value='50 years old manager'>50 years old manager</option>
-            <option value='college student'>college student</option>
-            <option value='sales associate'>sales associate</option>
+            {options.map(o => <option value={o}>{o}</option>)}
         </Select>
     )
 }

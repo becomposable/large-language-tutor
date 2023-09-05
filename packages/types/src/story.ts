@@ -39,6 +39,14 @@ export interface QuestionAndAnswerCheck extends QuestionAndAnswer {
     correct_answer: string,
 }
 
+export interface StoryOptions {
+    types: string[],
+    topics: string[],
+    styles: string[],
+    levels: string[],
+}
+
+
 export const QuestionsSchema: JSONSchema4 = {
     type: "object",
     properties: {

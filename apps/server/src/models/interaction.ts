@@ -9,8 +9,6 @@ enum MessageStatus {
     deleted = 'deleted',
 }
 
-
-
 export interface Interaction {
     readonly id: string,
     readonly _id: ObjectIdType,
@@ -33,7 +31,6 @@ export interface Interaction {
 }
 
 export const ExplanationSchema = new mongoose.Schema<Interaction>({
-
     status: { type: String, enum: Object.values(MessageStatus), default: MessageStatus.active },
     cache_policy: { type: String, required: true, default: 'no_cache' },
     model: { type: String, required: true, default: 'davinci:2020-05-03' },

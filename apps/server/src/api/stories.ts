@@ -11,7 +11,9 @@ import StoryGenerator from "../openai/StoryGenerator.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 import { MessageStatus } from "../models/message.js";
 import { ServerError } from "@koa-stack/router";
-import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
+import { QACheck, Question, QuestionAndAnswer, StoryOptions } from "@language-tutor/types";
+import StoryOptionsGenerator from "../openai/ListStoryOptions.js";
+import { UserModel } from "../models/user.js";
 
 function parseStoryResult(result: string) {
     result = result.trim()
@@ -85,6 +87,27 @@ export class StoriesResource extends Resource {
         ctx.status = 200;
     }
 
+    @get('/options')
+    async getStoryOptions(ctx: Context) {
+
+        const userId = await requestUser(ctx);
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            ctx.throw(403, `User with id ${userId} not found`);
+        }
+        const studyLanguage = ctx.query.studyLanguage as string ?? 'Japanese';
+        const userLanguage = user.language ?? 'English';
+
+        const optionGenerator = new StoryOptionsGenerator(studyLanguage, userLanguage);
+        const options: StoryOptions = await optionGenerator.execute();
+
+        ctx.body = {
+            type: 'StoryOptions',
+            data: options,
+            generated_at: new Date(),
+        }
+
+    }
 
     @get('/:storyId')
     async getStory(ctx: Context) {
@@ -196,5 +219,7 @@ export class StoriesResource extends Resource {
         ctx.status = 200;
 
     }
+
+
 
 }

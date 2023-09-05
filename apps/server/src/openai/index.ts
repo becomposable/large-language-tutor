@@ -9,6 +9,12 @@ export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
 });
 
+export enum KnownModels { 
+    "gpt-4" = "gpt-4",
+    "gpt-3" = "gpt-3.5-turbo",
+    "llama2" = "llama2",
+}
+
 /** Abstract class defining the base methods of a prompt
  * Implement and extend this class to create Prompt that can be used to
  * Generate Prompts for use case and LLMs.
@@ -23,11 +29,13 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
     //TODO the conversation has a user reference sop we can fetch the user info with a populate
     userAge?: number;
     userLevel?: string;
+    model: KnownModels;
 
-    constructor(study_language?: string, user_language?: string, schema?: Object) {
+    constructor(study_language?: string, user_language?: string, schema?: Object, model?: KnownModels) {
         this.studyLanguage = study_language ?? 'Japanese';
         this.userLanguage = user_language ?? 'English';
         this.schema = schema;
+        this.model = model ?? KnownModels["gpt-4"];
     }
 
     getSafetyMsg(): string {
@@ -144,7 +152,7 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
         if (stream) {
             return openai.chat.completions.create({
                 stream: stream,
-                model: "gpt-4",
+                model: this.model,
                 messages: messages,
                 temperature: temperature,
                 n: 1,
@@ -154,7 +162,7 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
 
         const res = await openai.chat.completions.create({
             stream: stream,
-            model: "gpt-4",
+            model: this.model,
             messages: messages,
             temperature: temperature,
             n: 1,
