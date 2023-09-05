@@ -93,7 +93,10 @@ export class AuthResource extends Resource {
     @get("/me")
     async getMe(ctx: Context) {
         const principal = await authorize(ctx) as Principal<AuthUser>;
-        const user = await principal.getOrCreateUser();
+        const user = await principal.getUser();
+        if (!user) {
+            ctx.throw(404, "User not found");
+        }
         ctx.body = await user.toJsonObject();
     }
 

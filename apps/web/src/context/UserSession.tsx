@@ -12,6 +12,7 @@ export interface IUserSession {
     client: FetchClient;
     signOut: () => void;
     isLoading: boolean;
+    refreshUser: () => void;
 }
 
 function linkUser(client: FetchClient, firebaseUser: User): Promise<IUserSessionInfo> {
@@ -24,12 +25,21 @@ function linkUser(client: FetchClient, firebaseUser: User): Promise<IUserSession
     });
 }
 
+function getUser(client: FetchClient): Promise<IUserSessionInfo> {
+    return client.clone(Env.AUTH_BASE_URL).get('/me');
+}
+
 function _signOut() {
     signOut(firebaseAuth);
 }
 
 const UserSessionContext = createContext<IUserSession>({
-    user: undefined, account: undefined, client: new FetchClient(Env.API_BASE_URL), signOut: _signOut, isLoading: false
+    user: undefined,
+    account: undefined,
+    client: new FetchClient(Env.API_BASE_URL),
+    signOut: _signOut,
+    isLoading: false,
+    refreshUser: () => { }
 });
 
 interface UserSessionProviderProps {
@@ -41,6 +51,21 @@ export function UserSessionProvider({ children }: UserSessionProviderProps) {
         client: new FetchClient(Env.API_BASE_URL),
         signOut: _signOut,
         isLoading: true,
+        refreshUser: () => {
+            getUser(session.client).then((userInfo: IUserSessionInfo) => {
+                const userWithAccounts = {
+                    ...userInfo.user,
+                    accounts: userInfo.accounts
+                };
+                setSession({
+                    ...session,
+                    user: userWithAccounts,
+                    account: userInfo.selected_account,
+                });
+            }).catch(err => {
+                console.error('Error refreshing user', err);
+            })
+        }
     });
 
     useEffect(() => {
