@@ -61,6 +61,7 @@ export function UserSessionProvider({ children }: UserSessionProviderProps) {
                     ...session,
                     user: userWithAccounts,
                     account: userInfo.selected_account,
+                    isLoading: false
                 });
             }).catch(err => {
                 console.error('Error refreshing user', err);

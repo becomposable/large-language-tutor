@@ -20,7 +20,7 @@ function getLanguageName(lang: string, userLanguage: string = 'en') {
 
     return languageNames.of(lang);
 }
-  
+
 
 export default function SelectLanguage({ value, onChange }: SelectLanguageProps) {
 
@@ -31,8 +31,8 @@ export default function SelectLanguage({ value, onChange }: SelectLanguageProps)
     }
     return (
         <Select value={value} onChange={_onChange}>
-            { SupportedLanguages.map((lang) => {
-                return <option key={value} value={lang}>{getLanguageName(lang, user?.language ?? 'en')}</option>
+            {SupportedLanguages.map((lang) => {
+                return <option key={lang} value={lang}>{getLanguageName(lang, user?.language ?? 'en')}</option>
             })
             }
         </Select>

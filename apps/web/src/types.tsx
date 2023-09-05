@@ -10,11 +10,12 @@ export enum MessageStatus {
     active = 'active', // completion is done
 }
 
-export const SupportedLanguages = [ 
+export const SupportedLanguages = [
     "fr", "ja", "en", "de", "nl", "pt", "pl", "uk",
     "ru", "es", "it", "zh", "ko", "tr", "ar", "sv",
-    "cs", "da", "fi", "el", "he", "hi", "hu", "id",
+    "cs", "da", "fi", "el", "he", "hi", "hu", "id", "ro",
 ]
+SupportedLanguages.sort();
 
 export interface IMessage {
     id: string;

@@ -7,6 +7,7 @@ import { User } from "@language-tutor/types";
 import { useState } from "react";
 import LanguageSelector from "../../components/LanguageSelector";
 import { useUserSession } from "../../context/UserSession";
+import SelectLanguage from "../../components/LanguageSelector";
 
 interface UserPrefModalProps {
     isOpen: boolean;
@@ -44,7 +45,7 @@ export default function UserPrefModal({ isOpen, onClose }: UserPrefModalProps) {
                 <ModalHeader>Set your language</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <LanguageSelector
+                    <StatefulLanguageSelector
                         value={user?.language ?? 'en'}
                         onChange={(value) => updateUserPref('language', value)}
                     />
@@ -58,4 +59,19 @@ export default function UserPrefModal({ isOpen, onClose }: UserPrefModalProps) {
 
     )
 
+}
+
+interface StatefulLanguageSelectorProps {
+    value: string | undefined;
+    onChange: (value: string) => void;
+}
+function StatefulLanguageSelector({ value, onChange }: StatefulLanguageSelectorProps) {
+    const [selected, setSelected] = useState<string>(value || '');
+    const _onChange = (value: string) => {
+        setSelected(value);
+        onChange(value);
+    }
+    return (
+        <SelectLanguage value={selected} onChange={_onChange} />
+    )
 }
