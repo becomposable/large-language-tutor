@@ -15,6 +15,14 @@ export enum KnownModels {
     "llama2" = "llama2",
 }
 
+
+function getLanguageName(lang: string) {
+    const languageNames = new Intl.DisplayNames('en', {
+        type: 'language'
+    });
+    return languageNames.of(lang) ?? lang;
+}
+
 /** Abstract class defining the base methods of a prompt
  * Implement and extend this class to create Prompt that can be used to
  * Generate Prompts for use case and LLMs.
@@ -32,8 +40,8 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
     model: KnownModels;
 
     constructor(study_language?: string, user_language?: string, schema?: Object, model?: KnownModels) {
-        this.studyLanguage = study_language ?? 'Japanese';
-        this.userLanguage = user_language ?? 'English';
+        this.studyLanguage = getLanguageName(study_language ?? 'ja');
+        this.userLanguage = getLanguageName(user_language ?? 'en');
         this.schema = schema;
         this.model = model ?? KnownModels["gpt-4"];
     }

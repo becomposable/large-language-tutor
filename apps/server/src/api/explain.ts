@@ -72,7 +72,6 @@ export class ExplainResource extends Resource {
         let topic = payload.content;
         const messageId = payload.messageId ?? undefined;
         const studyLanguage = payload.studyLanguage ?? undefined;
-        const userLanguage = payload.userLanguage ?? undefined;
         const blocking = payload.blocking ?? false;
 
         if (!messageId && !topic) {
@@ -91,9 +90,13 @@ export class ExplainResource extends Resource {
             ctx.throw(400, "No topic provided");
         }
 
+        if (!user.language) {
+            ctx.throw(400, "User language not set");
+        }
+
         let content: string | undefined = undefined;
         if (blocking) {
-            const explainRequest = new ExplainCompletion(studyLanguage, userLanguage, topic, messageId);
+            const explainRequest = new ExplainCompletion(studyLanguage, user.language, topic, messageId);
             const result = await explainRequest.execute();
             content = result;
         }
@@ -105,7 +108,7 @@ export class ExplainResource extends Resource {
             message: messageId,
             user: user._id,
             account: accountId,
-            user_language: userLanguage,
+            user_language: user.language ?? 'en',
             study_language: studyLanguage,
         });
 

@@ -96,7 +96,7 @@ export class StoriesResource extends Resource {
             ctx.throw(403, `User with id ${userId} not found`);
         }
         const studyLanguage = ctx.query.studyLanguage as string ?? 'Japanese';
-        const userLanguage = user.language ?? 'English';
+        const userLanguage = user.language ?? 'en';
 
         const optionGenerator = new StoryOptionsGenerator(studyLanguage, userLanguage);
         const options: StoryOptions = await optionGenerator.execute();

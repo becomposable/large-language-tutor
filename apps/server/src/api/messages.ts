@@ -139,7 +139,7 @@ class MessageResource extends Resource {
                 message: msg.id,
                 content: undefined,
                 study_language: msg.conversation.study_language,
-                user_language: msg.conversation.user_language,
+                user_language: user.language ?? 'en',
             });
         }
 
