@@ -15,19 +15,20 @@ interface UserPrefModalProps {
 
 export default function UserPrefModal({ isOpen, onClose }: UserPrefModalProps) {
 
-    const { user, client } = useUserSession();
-    const [ userPref, setUserPref ] = useState<Partial<User>|undefined>(undefined);
+    const { user, client, refreshUser } = useUserSession();
+    const [userPref, setUserPref] = useState<Partial<User> | undefined>(undefined);
 
     const updateUserPref = (key: string, value: string) => {
-        setUserPref({...userPref, [key]: value});
+        setUserPref({ ...userPref, [key]: value });
     }
 
     const savePrefs = () => {
         if (userPref) {
             console.log("Saving user prefs: ", userPref)
-            client.post('/users/me', { payload: userPref } )
+            client.post('/users/me', { payload: userPref })
                 .then(() => {
                     onClose();
+                    refreshUser();
                 })
                 .catch(err => {
                     console.error(err);
@@ -45,8 +46,8 @@ export default function UserPrefModal({ isOpen, onClose }: UserPrefModalProps) {
                 <ModalBody>
                     <LanguageSelector
                         value={user?.language ?? 'en'}
-                        onChange={ (value) => updateUserPref('language', value)}
-                        />
+                        onChange={(value) => updateUserPref('language', value)}
+                    />
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='blue' mr={3} onClick={onClose}>Close</Button>
