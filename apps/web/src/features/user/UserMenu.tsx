@@ -1,8 +1,9 @@
-import { Avatar, Box, Flex, HStack, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Spinner, Text, VStack } from "@chakra-ui/react";
+import { Avatar, Box, Flex, HStack, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Spinner, Text, VStack, useDisclosure } from "@chakra-ui/react";
 import { useUserSession } from "../../context/UserSession"
 import { FiChevronDown } from "react-icons/fi";
 import SignInModal from "./SignInModal";
 import { useAppBgColorModeValue, useAppBorderColorModeValue } from "../../layout/colors";
+import UserPrefModal from "./UserSettingsModal";
 
 
 interface UserMenuProps {
@@ -47,7 +48,7 @@ export default function UserMenu({ }: UserMenuProps) {
                     bg={appBg}
                     borderColor={appBorderColor}>
                     <MenuItem>Profile</MenuItem>
-                    <MenuItem>Settings</MenuItem>
+                    <UserMenuSettings />
                     <MenuItem>Billing</MenuItem>
                     <MenuDivider />
                     <MenuItem onClick={signOut}>Sign out</MenuItem>
@@ -56,3 +57,17 @@ export default function UserMenu({ }: UserMenuProps) {
         )
     }
 }
+
+
+interface UserSettingsModalProps {
+}
+function UserMenuSettings({ }: UserSettingsModalProps) {
+    const { isOpen, onOpen, onClose } = useDisclosure();
+    return (
+        <>
+            <MenuItem onClick={onOpen}>Settings</MenuItem>
+            <UserPrefModal isOpen={isOpen} onClose={onClose} />
+        </>
+    )
+}
+
