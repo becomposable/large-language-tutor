@@ -7,6 +7,7 @@ import { ExplainResource } from "./explain.js";
 import { MessagesResource } from "./messages.js";
 import { StoriesResource } from "./stories.js";
 import { authorize } from "@koa-stack/auth";
+import { UsersResource } from "./users.js";
 //import { authMiddleware, authorize } from "../auth/module.js";
 
 //TODO put in a shared project
@@ -30,6 +31,8 @@ export interface IExplainPayload extends IUserPayload {
     '/explain': ExplainResource,
     '/stories': StoriesResource,
     '/dictionnary': DictionnaryResource,
+    '/users': UsersResource,
+
 })
 @filters(async (ctx: Context, next: Next) => {
     // resources which are not used for streaming requires a login

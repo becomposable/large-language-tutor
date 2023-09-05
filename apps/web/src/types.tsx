@@ -10,17 +10,11 @@ export enum MessageStatus {
     active = 'active', // completion is done
 }
 
-export enum Languages {
-    Japanese = "JA",
-    English = "EN",
-    French = "FR",
-    Spanish = "SP",
-    Portugese = "PT",
-    Italian = "IT",
-    German = "DE",
-    Dutch = "NL",
-    Romanian = "RO"
-}
+export const SupportedLanguages = [ 
+    "fr", "ja", "en", "de", "nl", "pt", "pl", "uk",
+    "ru", "es", "it", "zh", "ko", "tr", "ar", "sv",
+    "cs", "da", "fi", "el", "he", "hi", "hu", "id",
+]
 
 export interface IMessage {
     id: string;
@@ -34,8 +28,8 @@ export interface IMessage {
 export interface IConversation {
     title?: string,
     waiting_for_completion: boolean,
-    study_language: Languages,
-    user_language: Languages,
+    study_language: string,
+    user_language: string,
     created: string,
     updated: string,
     id: string,

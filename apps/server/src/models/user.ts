@@ -16,7 +16,7 @@ export interface IUser {
     externalId: string; // firebaseId
     email: string;
     name: string; // displayName in firebase
-    language?: string; // lamnguage code 
+    language?: string; // language code 
     level?: number;
     phone?: string;
     picture?: string; // photo url if any

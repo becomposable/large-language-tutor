@@ -1,10 +1,10 @@
 import { AddIcon } from "@chakra-ui/icons";
-import { Button, FormControl, FormLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, useDisclosure, useToast } from "@chakra-ui/react";
-import { ChangeEvent, SyntheticEvent, useState } from "react";
-import StyledIconButton from "../../components/StyledIconButton";
-import { Languages } from "../../types";
-import { useUserSession } from "../../context/UserSession";
+import { Button, FormControl, FormLabel, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, useDisclosure, useToast } from "@chakra-ui/react";
+import { SyntheticEvent, useState } from "react";
 import { useNavigate } from "react-router";
+import LanguageSelector from "../../components/LanguageSelector";
+import StyledIconButton from "../../components/StyledIconButton";
+import { useUserSession } from "../../context/UserSession";
 
 
 interface CreateConversationModalProps {
@@ -42,8 +42,8 @@ interface CreateFormProps {
     onClose: () => void;
 }
 function CreateForm({ onClose }: CreateFormProps) {
-    const [userLanguage, setUserLanguage] = useState<Languages>(Languages.English);
-    const [studyLanguage, setStudyLanguage] = useState<Languages>(Languages.Japanese);
+    const [userLanguage, setUserLanguage] = useState<string>('en');
+    const [studyLanguage, setStudyLanguage] = useState<string>('en');
     const [isLoading, setLoading] = useState<boolean>(false);
     const { client } = useUserSession();
     const toast = useToast({ isClosable: true, duration: 90000 });
@@ -75,11 +75,11 @@ function CreateForm({ onClose }: CreateFormProps) {
             <ModalBody>
                 <FormControl mb='4'>
                     <FormLabel>User Language</FormLabel>
-                    <SelectLanguage value={userLanguage} onChange={setUserLanguage} />
+                    <LanguageSelector value={userLanguage} onChange={setUserLanguage} />
                 </FormControl>
                 <FormControl>
                     <FormLabel>Study Language</FormLabel>
-                    <SelectLanguage value={studyLanguage} onChange={setStudyLanguage} />
+                    <LanguageSelector value={studyLanguage} onChange={setStudyLanguage} />
                 </FormControl>
             </ModalBody>
             <ModalFooter>
@@ -89,23 +89,5 @@ function CreateForm({ onClose }: CreateFormProps) {
                 <Button isLoading={isLoading} colorScheme='blue' onClick={onSubmit} >Create</Button>
             </ModalFooter>
         </>
-    )
-}
-
-interface SelectLanguageProps {
-    value: Languages;
-    onChange: (value: Languages) => void;
-}
-function SelectLanguage({ value, onChange }: SelectLanguageProps) {
-    const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {
-        onChange(ev.target.value as Languages)
-    }
-    return (
-        <Select value={value} onChange={_onChange}>
-            <option value='Japanese'>Japanese</option>
-            <option value='English'>English</option>
-            <option value='French'>French</option>
-            <option value='Romanian'>Romanian</option>
-        </Select>
     )
 }
