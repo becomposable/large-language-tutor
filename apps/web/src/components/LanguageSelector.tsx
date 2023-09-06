@@ -5,7 +5,7 @@ import { SupportedLanguages } from "../types";
 
 
 interface SelectLanguageProps {
-    value: string;
+    value?: string;
     onChange: (value: string) => void;
 }
 
@@ -31,6 +31,7 @@ export default function SelectLanguage({ value, onChange }: SelectLanguageProps)
     }
     return (
         <Select value={value} onChange={_onChange}>
+            <option value={undefined}>Select a language</option>
             {SupportedLanguages.map((lang) => {
                 return <option key={lang} value={lang}>{getLanguageName(lang, user?.language ?? 'en')}</option>
             })

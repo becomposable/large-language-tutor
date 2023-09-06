@@ -1,5 +1,5 @@
 import { AddIcon } from "@chakra-ui/icons";
-import { Button, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, Spinner, useDisclosure, useToast } from "@chakra-ui/react";
+import { Button, Text, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, Spinner, useDisclosure, useToast, FormHelperText } from "@chakra-ui/react";
 import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
 import StyledIconButton from "../../components/StyledIconButton";
 import { useUserSession } from "../../context/UserSession";
@@ -42,7 +42,7 @@ interface CreateFormProps {
 }
 
 function CreateForm({ onClose }: CreateFormProps) {
-    const [studyLanguage, setStudyLanguage] = useState<string>('en');
+    const [studyLanguage, setStudyLanguage] = useState<string|undefined>(undefined);
     const [style, setStyle] = useState<string>("");
     const [level, setLevel] = useState<string>("beginner");
     const [topic, setTopic] = useState<string>("");
@@ -109,9 +109,13 @@ function CreateForm({ onClose }: CreateFormProps) {
             <ModalBody>
                 <FormControl>
                     <FormLabel>Study Language</FormLabel>
+                    <FormHelperText py={2} pb={4}>Select a language and the system will generate options for you. 
+                        Options change all the time and adapted to your experience.
+                        It will take 10-15sec to generate.
+                    </FormHelperText>
                     <LanguageSelector value={studyLanguage} onChange={setStudyLanguage} />
                 </FormControl>
-            { options ?
+            { (options && !isLoading) &&
                 <>
                 <FormControl>
                     <FormLabel>Type</FormLabel>
@@ -128,9 +132,7 @@ function CreateForm({ onClose }: CreateFormProps) {
                     <OptionsSelect value={style} options={options.styles} onChange={setStyle} />
                 </FormControl>
                 </>
-                : <Spinner />
-                } 
-
+                }
             </ModalBody>
             <ModalFooter>
                 <Button variant='ghost' mr={3} onClick={onClose}>
