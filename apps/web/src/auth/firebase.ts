@@ -1,9 +1,13 @@
 import { FirebaseOptions, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import Env from '../env';
+
+//use same host if we're not in local dev to avoid Safari auth issues
+const authDomain = Env.HOST_DOMAIN.startsWith('localhost') ? "language-labs-397109.firebaseapp.com" : Env.HOST_DOMAIN;
 
 export const firebaseConfig: FirebaseOptions = {
     apiKey: "AIzaSyCfU437XoWFhUu98QleE7UoSlP9JtcWxeE",
-    authDomain: "language-labs-397109.firebaseapp.com",
+    authDomain: authDomain,
 };
 
 const firebaseApp = initializeApp(firebaseConfig);

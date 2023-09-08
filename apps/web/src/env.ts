@@ -12,6 +12,7 @@ const Env = {
     SERVER_URL: serverUrl,
     API_BASE_URL: `${serverUrl}/api/v1`,
     AUTH_BASE_URL: `${serverUrl}/auth`,
+    HOST_DOMAIN: env.HOST_DOMAIN || "lang-tutor-five.vercel.app",
     KUROMOJI_DICT: env.VITE_KUROMOJI_DICT || "/kuromoji/dict/",
 }
 
