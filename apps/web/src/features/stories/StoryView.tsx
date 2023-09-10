@@ -308,7 +308,7 @@ function RenderTextToHtml({ text, language }: { text: string, language: string }
                     : line
                     }
                 </Text>
-                <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({contentToExplain: line})} />
+                <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({content: line})} />
             </HStack>
         )
     })
