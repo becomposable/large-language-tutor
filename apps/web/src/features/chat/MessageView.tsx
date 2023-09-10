@@ -43,7 +43,7 @@ export default function MessageView({ message, conversation }: MessageViewProps)
                 {
                     isActive && <HStack>
                         <StyledIconButton title='Pronunciation' icon={<MdOutlineVolumeUp />} onClick={onPronunciation} />
-                        <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({contentToExplain: message.content, messageId: message.id})} />
+                        <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({content: message.content, messageId: message.id})} />
                     </HStack>
                 }
             </Flex>
