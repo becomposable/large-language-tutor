@@ -3,7 +3,7 @@ import FetchClient from "../fetch-client";
 import Env from "../env";
 import { firebaseAuth } from "../auth/firebase";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { IAccount, IUser, IUserSessionInfo, IUserWithAccounts } from "../types";
+import { IAccount, IUserSessionInfo, IUserWithAccounts } from "../types";
 import { signOut } from "firebase/auth"
 
 export interface IUserSession {

@@ -2,8 +2,6 @@ import { Box, Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFoo
 import { IExplainContext } from "./ExplainContextProvider";
 import { ExplainStreamView } from "./ExplainStreamView";
 
-
-
 export default function ExplainModal({context, onClose}: {context: IExplainContext, onClose: () => void}) {
 
     return (
@@ -14,7 +12,7 @@ export default function ExplainModal({context, onClose}: {context: IExplainConte
                 <ModalCloseButton />
                 <ModalBody>
                     <Box h='60vh' overflowY='auto'>
-                        <ExplainStreamView messageId={context.messageId} contentContext={context.contentContext} contentToExplain={context.contentToExplain} />
+                        <ExplainStreamView explainContext={context} />
                     </Box>
                 </ModalBody>
                 <ModalFooter>

@@ -2,8 +2,9 @@ import { createContext, useState } from "react";
 import ExplainModal from "./ExplainModal";
 
 export interface IExplainContext {
-    contentToExplain?: string,
+    content?: string,
     contentContext?: string,
+    verifyOnly?: boolean,
     messageId?: string,
 }
 

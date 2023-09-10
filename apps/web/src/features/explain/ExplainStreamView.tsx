@@ -6,16 +6,20 @@ import { IExplainContext } from "./ExplainContextProvider";
 import { Box } from "@chakra-ui/react";
 
 
-
-export function ExplainStreamView({ messageId, contentContext, contentToExplain }: IExplainContext) {
+export function ExplainStreamView( {explainContext}: {explainContext: IExplainContext}) {
     const { client } = useUserSession();
     const [content, setContent] = useState('');
     const [explanation, setExplanation] = useState<IExplanation | null>(null);
     const [inProgress, setInProgress] = useState(false);
 
     useEffect(() => {
+        if (inProgress) {
+            console.log("Already in progress, skipping")
+            return;
+        }
+
         const chunks: string[] = [];
-        const payload = { content: contentToExplain, context: contentContext, messageId: messageId };
+        const payload = explainContext;
         console.log("Requesting explanaition for: " + payload);
         if (inProgress) {
             console.log("Already in progress, skipping")
@@ -47,7 +51,7 @@ export function ExplainStreamView({ messageId, contentContext, contentToExplain 
             .catch(err => {
                 console.error(err);
             })
-    }, [contentToExplain, messageId]);
+    }, [explainContext]);
 
     return (
         <Box w='100%' h='100%'>

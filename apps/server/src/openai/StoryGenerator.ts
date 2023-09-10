@@ -25,7 +25,7 @@ export default class StoryGenerator extends CompletionBase<StoryGenerator> {
         
         const length = this.level === 'advanced' ? 700 : 250;
         const type = this.type ?? 'story';
-        const studyLanguageName = this.studyLanguage.length === 2 ? languageNames.of(this.studyLanguage.toLowerCase()) : this.studyLanguage;
+        const studyLanguageName = this.studyLanguage?.length === 2 ? languageNames.of(this.studyLanguage.toLowerCase()) : this.studyLanguage;
         const userLanguageName = this.userLanguage.length === 2 ? languageNames.of(this.userLanguage.toLowerCase()) : this.userLanguage;
 
         return `

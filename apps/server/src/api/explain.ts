@@ -32,7 +32,7 @@ export class ExplainResource extends Resource {
         expl.status = MessageStatus.pending;
         await expl.save();
 
-        const explRequest = new ExplainCompletion(expl.study_language, expl.user_language, expl.topic, expl.message?.toString());
+        const explRequest = new ExplainCompletion(expl.study_language, expl.user_language, expl.topic, expl.verifyOnly, expl.message?.toString());
         const stream = await explRequest.stream();
         const chunks = [];
         for await (const data of stream) {
@@ -73,6 +73,7 @@ export class ExplainResource extends Resource {
         const messageId = payload.messageId ?? undefined;
         const studyLanguage = payload.studyLanguage ?? undefined;
         const blocking = payload.blocking ?? false;
+        const verifyOnly = payload.verifyOnly ?? false;
 
         if (!messageId && !topic) {
             throw new ServerError("Missing conversation message or topic", 400);
@@ -96,7 +97,7 @@ export class ExplainResource extends Resource {
 
         let content: string | undefined = undefined;
         if (blocking) {
-            const explainRequest = new ExplainCompletion(studyLanguage, user.language, topic, messageId);
+            const explainRequest = new ExplainCompletion(studyLanguage, user.language, topic, verifyOnly, messageId);
             const result = await explainRequest.execute();
             content = result;
         }
@@ -105,6 +106,7 @@ export class ExplainResource extends Resource {
             status: blocking ? MessageStatus.active : MessageStatus.created,
             topic: topic,
             content: content,
+            verifyOnly: verifyOnly,
             message: messageId,
             user: user._id,
             account: accountId,

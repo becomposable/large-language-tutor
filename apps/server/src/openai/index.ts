@@ -30,7 +30,7 @@ function getLanguageName(lang: string) {
  */
 export abstract class CompletionBase<T extends CompletionBase<T>> {
 
-    studyLanguage: string;
+    studyLanguage?: string;
     userLanguage: string;
     schema?: Object;
     userInterests?: string[];
@@ -40,17 +40,14 @@ export abstract class CompletionBase<T extends CompletionBase<T>> {
     model: KnownModels;
 
     constructor(study_language?: string, user_language?: string, schema?: Object, model?: KnownModels) {
-        this.studyLanguage = getLanguageName(study_language ?? 'ja');
+        this.studyLanguage = study_language ? getLanguageName(study_language) : undefined;
         this.userLanguage = getLanguageName(user_language ?? 'en');
         this.schema = schema;
         this.model = model ?? KnownModels["gpt-4"];
     }
 
     getSafetyMsg(): string {
-        const msg = `
-        The user is at level ${this.userLevel} in ${this.studyLanguage}.
-        Please only use words and structure that should be accessible for this level in the language.`;
-
+        let msg = '';
         return msg;
     }
 
@@ -207,12 +204,19 @@ export class ConversationCompletion extends CompletionBase<ConversationCompletio
 
     getAppInstruction(): string {
 
-        return `
-        You are a language tutor. The user is learning ${this.studyLanguage} and is speaking ${this.userLanguage}.
-        You are chatting with this user to help him/her practice and learn ${this.studyLanguage}.
+        let msg = `You are a language tutor and sparring partner. `;
+        if (this.studyLanguage) msg += `The user is learning ${this.studyLanguage}. `
+        if (this.userLanguage) msg += `The user is speaking ${this.userLanguage}. ` 
+        msg += `You are chatting with this user to help him/her practice and learn ${this.studyLanguage}.
         Always make sure your messages are engaging and helpful.
-        Make sure that when you repond, you always entince the user to answer back.
+        Make sure that when you repond, you always entice the user to answer back.
+        Try to keep the conversation engaging, so the user has in incentive to continue.
+        You should always try to keep the conversation going, and never let it die.
+        Do not use Romaji. You can ask the user if he/she want a Hiragana or Katakana version of complicated Kanji.
+        You can only write in ${this.studyLanguage}. 
         `;
+
+        return msg;
 
     }
 
