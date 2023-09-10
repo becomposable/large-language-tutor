@@ -8,6 +8,8 @@ import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js
 import ExplainCompletion from "../openai/ExplainCompletion.js";
 import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
+import VerifyContentCompletion from "../openai/VerifyContent.js";
+import logger from "../logger.js";
 
 
 export class MessagesResource extends Resource {
@@ -147,6 +149,36 @@ class MessageResource extends Resource {
         ctx.status = 200;
     }
 
+
+    /**
+     * This verifies the message, store the result and return the result
+     * @param ctx
+     *  */
+
+    @get('/verify')
+    async verifyMessage(ctx: Context) {
+        const user = await requestUser(ctx);
+        const msgId = ctx.params.messageId;
+        const msg = await MessageModel.findById(msgId);
+        if (!msg) ctx.throw(404, `Message with id ${msgId} not found`);
+        if (!user.language) ctx.throw(400, "User language not set");
+
+        //if already present, return
+        if (msg.verification) {
+            ctx.body = msg.verification;
+            ctx.status = 200;
+            return;
+        }
+
+        const verifyRequest = new VerifyContentCompletion(user.language, msg.content);
+        const result = await verifyRequest.execute();
+        msg.verification = result;
+        logger.info(`Message ${msgId} verified`, result);
+        await msg.save();
+
+        ctx.body = msg.verification;
+        ctx.status = 200;
+    }
 
     /**
      * @deprecated this endpoint is depreacted and should be removed

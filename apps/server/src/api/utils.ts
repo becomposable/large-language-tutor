@@ -13,6 +13,7 @@ export function tryRequestAccountId(ctx: Context) {
 export function requestAccountId(ctx: Context) {
     const account = tryRequestAccountId(ctx);
     if (!account) ctx.throw(400, `Expected an ${Env.xAccountHeader} header`);
+    return account;
 }
 
 export function tryRequestPrincipal(ctx: Context) {

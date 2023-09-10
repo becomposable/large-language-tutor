@@ -1,6 +1,7 @@
 import type { FilterQuery, ObjectId as ObjectIdType } from 'mongoose';
 import mongoose from 'mongoose';
 import { IConversation } from './conversation.js';
+import { VerifyContentResult } from '@language-tutor/types';
 
 const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
@@ -27,6 +28,7 @@ export interface IMessage {
     content: string,
     origin: MessageOrigin,
     in_reply_to?: string | ObjectIdType,
+    verification?: VerifyContentResult,
 }
 
 export const MessageSchema = new mongoose.Schema<IMessage>({
@@ -35,6 +37,14 @@ export const MessageSchema = new mongoose.Schema<IMessage>({
     origin: { type: String, enum: Object.values(MessageOrigin), required: true },
     in_reply_to: { type: ObjectId, ref: 'Message', required: false, index: true },
     content: String,
+    verification: {
+        type: {
+            is_correct: { type: Boolean, required: true },
+            correction: { type: String, required: false },
+            importance: { type: String, enum: ["low", "medium", "high"], required: true },
+            explanation: { type: String, required: false },
+        },
+    },
 }, {
     timestamps: { createdAt: 'created', updatedAt: 'modified' }
 });

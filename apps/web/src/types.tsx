@@ -1,3 +1,5 @@
+import { VerifyContentResult } from '@language-tutor/types';
+
 export enum MessageOrigin {
     user = 'user',
     assistant = 'assistant',
@@ -23,6 +25,7 @@ export interface IMessage {
     status: MessageStatus;
     content: string;
     origin: MessageOrigin;
+    verification: VerifyContentResult;
     created: string;
 }
 
