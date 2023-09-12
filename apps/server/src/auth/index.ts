@@ -33,7 +33,7 @@ export class AuthUser implements IAuthUser {
         }
 
         return {
-            user: this.doc,
+            user: jsonDoc(this.doc),
             accounts: jsonDocs(accounts),
             selected_account: selectedAccount ? jsonDoc(selectedAccount) : null
         }
