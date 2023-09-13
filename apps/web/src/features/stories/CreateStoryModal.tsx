@@ -92,6 +92,16 @@ function CreateForm({ onClose }: CreateFormProps) {
         })
     };
 
+    const onSelectLanguage = (language: string) => {
+        console.log(language + "selected");
+        if (language === studyLanguage) {
+            return;
+        } else {
+            setOptions(undefined);
+            setStudyLanguage(language);
+        }
+    }
+
     const getStories = () => {
         setLoading(true);
         client.post('/stories', {
@@ -127,7 +137,7 @@ function CreateForm({ onClose }: CreateFormProps) {
                         Options change all the time and adapted to your experience.
                         It will take 10-15sec to generate.
                     </FormHelperText>
-                    <LanguageSelector value={studyLanguage} onChange={setStudyLanguage} />
+                    <LanguageSelector value={studyLanguage} onChange={onSelectLanguage} />
                 </FormControl>
             { (options && !isLoading) &&
                 <>
