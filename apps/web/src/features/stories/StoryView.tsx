@@ -307,7 +307,7 @@ function RenderTextToHtml({ text, language }: { text: string, language: string }
                     {(language === 'ja') ? 
                     <JpText text={line} />
                     :
-                    <SpaceTokenizedText text={line} /> 
+                    <SpaceTokenizedText text={line} language={language} /> 
                     }
                 </Text>
                 <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({content: line})} />

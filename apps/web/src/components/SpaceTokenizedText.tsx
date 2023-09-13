@@ -1,15 +1,16 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { ExplainContext } from "../features/explain/ExplainContextProvider";
+import { Box } from "@chakra-ui/react";
 
 
-export default function SpaceTokenizedText({ text }: { text: string }) {
+export default function SpaceTokenizedText({ text, language }: { text: string, language?: string }) {
 
     return (
         <>
             {text.split(' ').map((word) => {
                 return (
                     <>
-                        <Word word={word} />
+                        <Word word={word} language={language} />
                         <span> </span>
                     </>
                 )
@@ -19,22 +20,15 @@ export default function SpaceTokenizedText({ text }: { text: string }) {
 
 }
 
-function Word({ word }: { word: string }) {
+function Word({ word, language }: { word: string, language?: string }) {
     const doExplain = useContext(ExplainContext);
-    const [isHover, setIsHover] = useState(false);
 
-    const wordStyle = {
-        backgroundColor: isHover ? 'lightyellow' : 'transparent',
-        cursor: 'pointer'
-    }
     return (
-        <span
-            style={wordStyle}
-            onClick={() => doExplain({ content: word })}
-            onMouseEnter={() => setIsHover(true)}
-            onMouseLeave={() => setIsHover(false)}
+        <Box as="span"
+            _hover={{ backgroundColor: 'lightyellow', cursor: 'pointer' }}
+            onClick={() => doExplain({ content: word, studyLanguage: language })}
             className='word'>
             {word}
-        </span>
+        </Box>
     )
 }

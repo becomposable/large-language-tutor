@@ -6,6 +6,7 @@ export interface IExplainContext {
     contentContext?: string,
     verifyOnly?: boolean,
     messageId?: string,
+    studyLanguage?: string,
 }
 
 type DoExplainFunc = (args: IExplainContext) => void;
