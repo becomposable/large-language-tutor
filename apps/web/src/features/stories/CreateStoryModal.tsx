@@ -1,11 +1,11 @@
 import { AddIcon } from "@chakra-ui/icons";
-import { Button, Text, FormControl, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, Spinner, useDisclosure, useToast, FormHelperText } from "@chakra-ui/react";
-import { ChangeEvent, SyntheticEvent, useEffect, useState } from "react";
+import { Button, FormControl, FormHelperText, FormLabel, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Portal, Select, useDisclosure, useToast } from "@chakra-ui/react";
+import { StoryOptions } from "@language-tutor/types";
+import { ChangeEvent, SyntheticEvent, useState } from "react";
+import { useNavigate } from "react-router";
+import LanguageSelector from "../../components/LanguageSelector";
 import StyledIconButton from "../../components/StyledIconButton";
 import { useUserSession } from "../../context/UserSession";
-import { useNavigate } from "react-router";
-import { StoryOptions } from "@language-tutor/types";
-import LanguageSelector from "../../components/LanguageSelector";
 
 
 export default function CreateStoryModal() {
@@ -18,7 +18,7 @@ export default function CreateStoryModal() {
     return (
         <>
             <StyledIconButton
-                title='Create a conversation'
+                title='Create a Story'
                 icon={<AddIcon />}
                 onClick={onOpenModal}
             />
@@ -26,7 +26,7 @@ export default function CreateStoryModal() {
                 <Modal isOpen={isOpen} onClose={onClose}>
                     <ModalOverlay />
                     <ModalContent>
-                        <ModalHeader>Create a conversation</ModalHeader>
+                        <ModalHeader>Create a Story</ModalHeader>
                         <ModalCloseButton />
                         <CreateForm onClose={onClose} />
                     </ModalContent>
@@ -58,9 +58,23 @@ function CreateForm({ onClose }: CreateFormProps) {
         setTopic(ev.target.value);
     }
 
-    useEffect(() => {
+    const onSubmit = () => {
+        if (options) {
+            getStories();
+        } else {
+            getOptions();
+        }
+    }
+
+    const getOptions = () => {
 
         if (!user?.language || !studyLanguage) {
+            toast({
+                status: 'error',
+                title: 'Select a language in your profile',
+                description: 'Clic on your name in the top right corner and open Settings to select a language.'
+            })
+
             return;
         }
 
@@ -76,9 +90,9 @@ function CreateForm({ onClose }: CreateFormProps) {
                 description: err.message
             })
         })
-    }, [studyLanguage]);
+    };
 
-    const onSubmit = () => {
+    const getStories = () => {
         setLoading(true);
         client.post('/stories', {
             payload: {
@@ -138,7 +152,7 @@ function CreateForm({ onClose }: CreateFormProps) {
                 <Button variant='ghost' mr={3} onClick={onClose}>
                     Close
                 </Button>
-                <Button isLoading={isLoading} colorScheme='blue' onClick={onSubmit} >Create</Button>
+                <Button isLoading={isLoading} colorScheme='blue' onClick={onSubmit} >{options ? 'Generate Story' : 'Get Options'}</Button>
             </ModalFooter>
         </>
     )
