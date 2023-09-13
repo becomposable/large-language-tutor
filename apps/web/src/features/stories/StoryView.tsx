@@ -11,6 +11,7 @@ import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
 import { IStory, MessageStatus } from "../../types";
 import { ExplainContext } from "../explain/ExplainContextProvider";
+import SpaceTokenizedText from "../../components/SpaceTokenizedText";
 
 
 interface IStreamedContent {
@@ -303,13 +304,14 @@ function RenderTextToHtml({ text, language }: { text: string, language: string }
         return (
             <HStack key={i} justify="space-between" align="start">
                 <Text border="" padding={2} key={i}>
-                    {(language === 'JP' || language === 'JA') ? 
+                    {(language === 'ja') ? 
                     <JpText text={line} />
-                    : line
+                    :
+                    <SpaceTokenizedText text={line} /> 
                     }
                 </Text>
                 <StyledIconButton title='Explain' icon={<MdLightbulbOutline />} onClick={() => doExplain({content: line})} />
             </HStack>
         )
     })
-}
+}  
