@@ -2,13 +2,11 @@ import { useContext, useState } from "react";
 import { ExplainContext } from "../features/explain/ExplainContextProvider";
 
 
-
-
 export default function SpaceTokenizedText({ text }: { text: string }) {
 
     return (
         <>
-            {text.split(' ').map((word, i) => {
+            {text.split(' ').map((word) => {
                 return (
                     <>
                         <Word word={word} />
