@@ -10,7 +10,7 @@ export class DictionnaryResource extends Resource {
     @get('/:wordLanguage/:word/:userLanguage')
     async getDefinition(ctx: Context) {
 
-        const word = ctx.params.word;
+        const word = ctx.params.word.toLowerCase();
         const wordLanguage = ctx.params.wordLanguage;
         const userLanguage = ctx.params.userLanguage;
 
@@ -47,16 +47,16 @@ export class DictionnaryResource extends Resource {
             );
         } else {
             await DictionnaryDefinition.create({
-                word: data.word,
+                word: data.word.toLowerCase(),
                 word_kana: data.word_kana,
                 exists: data.exists,
-                language: data.language || wordLanguage,
-                definitionLanguage: data.definitionLanguage || userLanguage,
+                language: wordLanguage,
+                definitionLanguage: userLanguage,
                 corrected_word: data.corrected_word,
                 part_of_speech: data.part_of_speech,
                 pronounciation: data.pronounciation,
                 morphological_characteristics: data.morphological_characteristics,
-                normalized_form: data.normalized_form,
+                normalized_form: data.normalized_form?.toLowerCase(),
                 normalized_form_kana: data.normalized_form_kana,
                 senses: data.senses,
                 match_also: [data.word],

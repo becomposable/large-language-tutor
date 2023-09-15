@@ -1,7 +1,8 @@
-import { Box, Button, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, UnorderedList, VStack } from "@chakra-ui/react";
+import { Box, Button, HStack, Heading, Link, ListItem, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, UnorderedList, VStack } from "@chakra-ui/react";
 import Kuroshiro from "@language-tutor/kuroshiro";
 import { SyntheticEvent, useEffect, useState } from "react";
-import { IJapaneseWord, IpadicFeatures, tokenizeJapaneseWords } from "../../hooks/kurojomi";
+import { IJapaneseWord, tokenizeJapaneseWords } from "../../hooks/kurojomi";
+import AIDefinition from "../DictionnaryDefinition";
 import "./jp-word.css";
 
 export default function JpText({ text }: { text: string }) {
@@ -103,22 +104,30 @@ function JpWordModal({ word, setWord }: {
     };
 
     return word && (
-        <Modal isOpen={!!word} onClose={onClose}>
+        <Modal isOpen={!!word} onClose={onClose} size={"3xl"}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{word.text}</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    <VStack align='start'>
-                        <Box>Reading: {hiragamaText} ({def?.words[0].reading?.kana ?? word.text})</Box>
-                        <Box>Definition:
-                            <UnorderedList>
-                                {def?.words[0].senses.map((sense: any, index: number) => {
-                                    return <ListItem key={index}>{sense.glosses.join(', ')}</ListItem>
-                                })}
-                            </UnorderedList>
-                        </Box>
-                    </VStack>
+                    <HStack alignItems={"start"}>
+                        <VStack align='start' width={'35%'}>
+                            <Heading size={'md'}>Japanese Dictionnary</Heading>
+                            <Box>Reading: {hiragamaText} ({def?.words[0].reading?.kana ?? word.text})</Box>
+                            <Box>Definition:
+                                <UnorderedList>
+                                    {def?.words[0].senses.map((sense: any, index: number) => {
+                                        return <ListItem key={index}>{sense.glosses.join(', ')}</ListItem>
+                                    })}
+                                </UnorderedList>
+                            </Box>
+                            <Box fontWeight={'semibold'}>Provided by <Link href='https://jisho.org'>Jisho</Link> and <Link href='https://jotoba.de'>Jotoba</Link></Box>
+                        </VStack>
+                        <VStack align='start' width={'65%'}>
+                            <Heading size={'md'}>AI Dictionnary</Heading>
+                            <AIDefinition word={word.text} studyLanguage='ja' userLanguage='en' />
+                        </VStack>
+                    </HStack>
                 </ModalBody>
 
                 <ModalFooter>
