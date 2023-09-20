@@ -9,6 +9,7 @@ import DashboardPage from './pages/DashboardPage'
 import StoriesPage from './pages/StoriesPage'
 import StoryPage from './pages/StoryPage'
 import ExplainPage from './pages/ExplainPage'
+import { Analytics } from '@vercel/analytics/react'
 
 
 const router = createBrowserRouter([
@@ -51,6 +52,7 @@ function App() {
                     <RouterProvider router={router} />∏
                 </Box>
             </ChakraProvider>
+            <Analytics />
         </UserSessionProvider>
     )
 

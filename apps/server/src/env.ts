@@ -15,12 +15,16 @@ const Env = {
     serverUrl,
     openai: process.env.OPENAI_API_KEY,
     google: {
-        projectId: process.env.GOOGLE_PROJECT_ID || "language-labs-397109",
+        projectId: process.env.GOOGLE_PROJECT_ID,
     },
     db: {
         url: process.env.DB_URL,
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
+    },
+    slack: {
+        token: process.env.SLACK_TOKEN,
+        defaultChannel: process.env.SLACK_CHANNEL,
     }
 }
 
