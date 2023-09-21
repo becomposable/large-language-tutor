@@ -1,4 +1,4 @@
-import { Box, HStack, Heading, Text, VStack } from "@chakra-ui/react";
+import { Box, Heading, Spinner, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useUserSession } from "../context/UserSession";
 
@@ -45,8 +45,8 @@ export default function AIDefinition({ word, studyLanguage, userLanguage }: { wo
         <VStack align={'start'}>
             <Heading fontSize={'4xl'} py={2} pb={4}>
                 <Text>{wordData?.normalized_form ?? wordData?.corrected_word ?? word }</Text>
-                {(wordData?.normalized_form || wordData?.corrected_word) && <Text color={"gray.400"}>{word}</Text>}
-                {wordData?.word_kana && <Text color={'blue.300'} fontSize={'2xl'}>{wordData.word_kana}</Text>}
+                {(((wordData?.normalized_form && wordData?.normalized_form !== word) || wordData?.corrected_word)) && <Text color={"gray.400"}>{word}</Text>}
+                {(wordData?.word_kana && wordData?.word_kana !== word) && <Text color={'blue.300'} fontSize={'2xl'}>{wordData.word_kana}</Text>}
                 {wordData?.corrected_word && <Box fontSize={'xs'}>corrected from {word}</Box>}
             </Heading>
             {wordData ?
@@ -60,7 +60,9 @@ export default function AIDefinition({ word, studyLanguage, userLanguage }: { wo
                     })}
                 </Box>
                 :
-                <Box>Asking our AI Assistant for the definition...</Box>
+                <Box>Asking our AI Assistant for the definition (taking 5-10sec for the first time)...
+                    <Spinner />
+                </Box>
             }
         </VStack >
     )

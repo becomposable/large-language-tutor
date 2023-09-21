@@ -7,7 +7,6 @@ import { User } from "@language-tutor/types";
 import { useState } from "react";
 import SelectLanguage from "../../components/LanguageSelector";
 import { useUserSession } from "../../context/UserSession";
-import { set } from "firebase/database";
 
 interface UserPrefModalProps {
     isOpen: boolean;
