@@ -5,9 +5,9 @@
 import { Button, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay } from "@chakra-ui/react";
 import { User } from "@language-tutor/types";
 import { useState } from "react";
-import LanguageSelector from "../../components/LanguageSelector";
-import { useUserSession } from "../../context/UserSession";
 import SelectLanguage from "../../components/LanguageSelector";
+import { useUserSession } from "../../context/UserSession";
+import { set } from "firebase/database";
 
 interface UserPrefModalProps {
     isOpen: boolean;
@@ -18,20 +18,26 @@ export default function UserPrefModal({ isOpen, onClose }: UserPrefModalProps) {
 
     const { user, client, refreshUser } = useUserSession();
     const [userPref, setUserPref] = useState<Partial<User> | undefined>(undefined);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
 
     const updateUserPref = (key: string, value: string) => {
+        console.log("Updating user pref: ", key, value);
         setUserPref({ ...userPref, [key]: value });
     }
 
     const savePrefs = () => {
+        console.log("Saving user prefs", userPref)
+        setIsSaving(true);
         if (userPref) {
             console.log("Saving user prefs: ", userPref)
             client.post('/users/me', { payload: userPref })
                 .then(() => {
+                    setIsSaving(false);
                     onClose();
                     refreshUser();
                 })
                 .catch(err => {
+                    setIsSaving(false);
                     console.error(err);
                 })
         }
@@ -46,13 +52,13 @@ export default function UserPrefModal({ isOpen, onClose }: UserPrefModalProps) {
                 <ModalCloseButton />
                 <ModalBody>
                     <StatefulLanguageSelector
-                        value={user?.language ?? 'en'}
+                        value={user?.language}
                         onChange={(value) => updateUserPref('language', value)}
                     />
                 </ModalBody>
                 <ModalFooter>
                     <Button colorScheme='blue' mr={3} onClick={onClose}>Close</Button>
-                    <Button colorScheme='green' mr={3} onClick={savePrefs}>Save</Button>
+                    <Button colorScheme='green' mr={3} onClick={savePrefs} isLoading={isSaving}>Save</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

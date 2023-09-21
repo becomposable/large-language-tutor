@@ -16,6 +16,7 @@ export interface IUserSession {
 }
 
 function linkUser(client: FetchClient, firebaseUser: User): Promise<IUserSessionInfo> {
+    console.log('Linking user', firebaseUser.uid);
     return client.clone(Env.AUTH_BASE_URL).post('/link', {
         payload: {
             externalId: firebaseUser.uid,
@@ -26,6 +27,7 @@ function linkUser(client: FetchClient, firebaseUser: User): Promise<IUserSession
 }
 
 function getUser(client: FetchClient): Promise<IUserSessionInfo> {
+    console.log('Getting user');
     return client.clone(Env.AUTH_BASE_URL).get('/me');
 }
 

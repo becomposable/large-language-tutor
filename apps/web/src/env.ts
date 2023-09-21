@@ -3,6 +3,8 @@ const env = import.meta.env;
 
 const serverUrl = env.VITE_SERVER_URL || "https://lang-tutor-jc6rsiqkva-uc.a.run.app";
 
+console.log(env);
+
 const Env = {
     isProd: !!env.PROD,
     isDev: !!env.DEV,
@@ -12,9 +14,11 @@ const Env = {
     SERVER_URL: serverUrl,
     API_BASE_URL: `${serverUrl}/api/v1`,
     AUTH_BASE_URL: `${serverUrl}/auth`,
-    HOST_DOMAIN: env.HOST_DOMAIN || "lang-tutor-five.vercel.app",
+    WEB_DOMAIN: env.VITE_WEB_DOMAIN,
     KUROMOJI_DICT: env.VITE_KUROMOJI_DICT || "/kuromoji/dict/",
 }
 
+
+console.log('App Env', Env);
 
 export default Env;

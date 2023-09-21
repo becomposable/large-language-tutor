@@ -2,7 +2,6 @@ import { ChangeEvent } from "react";
 import { Select } from "@chakra-ui/react";
 import { useUserSession } from "../context/UserSession";
 import { SupportedLanguages } from "../types";
-import { useLocalStorage } from 'usehooks-ts';
 
 
 interface SelectLanguageProps {
@@ -22,17 +21,18 @@ function getLanguageName(lang: string, userLanguage: string = 'en') {
 export default function SelectLanguage({ value, onChange }: SelectLanguageProps) {
 
     const { user } = useUserSession();
-    const [studyLanguage, setStudyLanguage] = useLocalStorage('studyLanguage', 'en');
+    const languageOptions = SupportedLanguages.map((lang) => {
+        return { value: lang, label: getLanguageName(lang, user?.language ?? 'en') }
+    }).sort((a, b) => (a.label && b.label) ? a.label.localeCompare(b.label) : 0);
 
-    const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {
-        setStudyLanguage(ev.target.value as string);
+    const _onChange = (ev: ChangeEvent<HTMLSelectElement>) => {      
         onChange(ev.target.value as string)
     }
     return (
-        <Select value={value} onChange={_onChange}>
+        <Select defaultValue={value} onChange={_onChange}>
             <option value={undefined}>Select a language</option>
-            {SupportedLanguages.map((lang) => {
-                return <option selected={lang === studyLanguage} key={lang} value={lang}>{getLanguageName(lang, user?.language ?? 'en')}</option>
+            {languageOptions.map((lang) => {
+                return <option key={lang.value} value={lang.value}>{lang.label}</option>
             })
             }
         </Select>

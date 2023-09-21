@@ -5,6 +5,7 @@ import UserPrefModal from "../features/user/UserSettingsModal";
 
 export default function DashboardPage() {
     const { user } = useUserSession();
+    
     const onClose = () => {
         return;
     }
