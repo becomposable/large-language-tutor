@@ -14,6 +14,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 const firebaseAuth = getAuth(firebaseApp);
 
 function getAuthToken(refresh?: boolean) {
+    console.log('getAuthToken', refresh);
     const user = firebaseAuth.currentUser;
     if (user) {
         return user.getIdToken(refresh).then(token => {
