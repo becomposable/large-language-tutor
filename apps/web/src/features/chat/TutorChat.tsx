@@ -127,7 +127,7 @@ function ChatFooter({ onSubmit }: ChatFooterProps) {
         >
             <Box as='form' onSubmit={_onSubmit} noValidate autoComplete="off" w='90%'>
                 <FormControl display='flex' mt='2' bg='white'>
-                    <Input autoComplete="off" placeholder="Type a question" value={question} onChange={onQuestionChanged} mr='1' />
+                    <Input autoComplete="off" placeholder="Type something" value={question} onChange={onQuestionChanged} mr='1' />
                     <IconButton aria-label="Send" title="Send" icon={<MdSend />} type='submit' />
                 </FormControl>
             </Box>
