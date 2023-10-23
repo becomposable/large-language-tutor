@@ -1,11 +1,11 @@
+import { AuthError, IAuthUser, Principal, authorize } from "@koa-stack/auth";
+import { FirebaseAuth, FirebasePrincipal } from "@koa-stack/auth-firebase";
 import { Resource, get, post } from "@koa-stack/router";
 import { Context } from "koa";
 import { jsonDoc, jsonDocs } from "../api/utils.js";
-import { UserDocument, UserModel, findUserByEmail } from "../models/user.js";
-import { FirebaseAuth, FirebasePrincipal } from "@koa-stack/auth-firebase";
-import { IAuthUser, Principal, authorize } from "@koa-stack/auth";
-import { AuthError } from "@koa-stack/auth";
 import { AccountDocument, AccountModel, AccountRoles } from "../models/account.js";
+import { UserDocument, UserModel, findUserByEmail } from "../models/user.js";
+import { sendSlackMessage } from "../services/slack-notifier.js";
 
 export class AuthUser implements IAuthUser {
     constructor(public doc: UserDocument) {
@@ -75,6 +75,8 @@ new FirebaseAuth({
                 role: AccountRoles.admin
             }]
         })
+
+        sendSlackMessage(`New user created: ${user.name} (${user.email})`);
 
         return new AuthUser(user);
     }

@@ -24,7 +24,7 @@ const Env = {
     },
     slack: {
         token: process.env.SLACK_TOKEN,
-        defaultChannel: process.env.SLACK_CHANNEL,
+        defaultChannel: process.env.SLACK_CHANNEL ?? "#notifications-langtutor",
     }
 }
 

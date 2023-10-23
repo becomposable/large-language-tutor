@@ -12,20 +12,21 @@
     "type": "module",
     "main": "lib/main.js",
     "devDependencies": {
+        "@types/json-schema": "^7.0.12",
         "@types/koa": "^2.13.8",
         "@types/koa__cors": "^4.0.0",
         "@types/koa-compress": "^4.0.3",
         "rimraf": "^5.0.1",
-        "typescript": "^5.0.2",
-        "@types/json-schema": "^7.0.12"
+        "typescript": "^5.0.2"
     },
     "dependencies": {
-        "@language-tutor/types": "^1.0.0",
-        "@koa-stack/server": "^0.7.0",
-        "@koa-stack/router": "^0.7.0",
         "@koa-stack/auth": "^0.7.0",
         "@koa-stack/auth-firebase": "^0.7.0",
+        "@koa-stack/router": "^0.7.0",
+        "@koa-stack/server": "^0.7.0",
         "@koa/cors": "^4.0.0",
+        "@language-tutor/types": "^1.0.0",
+        "@slack/web-api": "^6.9.0",
         "better-sse": "^0.9.0",
         "dotenv": "^16.3.1",
         "firebase-admin": "^11.10.1",

@@ -3,6 +3,7 @@ import { Context } from "koa";
 import { ObjectId } from "mongodb";
 import { ConversationModel } from "../models/conversation.js";
 import { MessageModel } from "../models/message.js";
+import { sendSlackMessage } from "../services/slack-notifier.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
 
@@ -75,6 +76,8 @@ export default class ConversationsResource extends Resource {
             user_language: user_language,
         });
 
+
+        sendSlackMessage(`New conversation created: ${conversation.study_language} by ${user.name}`);
         ctx.body = jsonDoc(conversation);
         ctx.status = 201;
     }
