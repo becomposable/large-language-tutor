@@ -20,6 +20,7 @@ function getSlackClient(): WebClient | undefined {
         slackClient = new WebClient(Env.slack.token, {
             logLevel: LogLevel.INFO
         });
+        logger.info("[slack] Slack client initialized");
     }
     return slackClient;
 }
