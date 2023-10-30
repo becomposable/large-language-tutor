@@ -14,6 +14,7 @@
     ],
     "packageManager": "npm@latest",
     "dependencies": {
-        "@types/json-schema": "^7.0.12"
+        "@types/json-schema": "^7.0.12",
+        "@composableai/studio": "^0.8.0"
     }
 }
