@@ -1,235 +1,239 @@
 /**
  * Manage Story generation
  */
-import { Resource, ServerError, get, post } from "@koa-stack/router";
+import { Resource, ServerError, get, post, put } from "@koa-stack/router";
 import {
-  QACheck,
-  Question,
-  QuestionAndAnswer,
-  StoryOptions,
+    AnswerChecker,
+    AnswerCheckerProps,
+    GenerateAStory, GenerateQuestions, GenerateStoryOptions
+} from "@language-tutor/interactions";
+import {
+    Question,
+    QuestionAndAnswer
 } from "@language-tutor/types";
-import SSE from "better-sse";
 import { Context } from "koa";
+import logger from "../logger.js";
 import { MessageStatus } from "../models/message.js";
 import { Story } from "../models/stories.js";
 import { UserModel } from "../models/user.js";
-import { AnswerChecker } from "../openai/AnswerChecker.js";
-import StoryOptionsGenerator from "../openai/ListStoryOptions.js";
-import { QuestionsGenerator } from "../openai/QuestionGenerator.js";
-import StoryGenerator from "../openai/StoryGenerator.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
-function parseStoryResult(result: string) {
-  result = result.trim();
-  const eol = result.indexOf("\n");
-  if (eol < 0) {
-    throw new ServerError(
-      `Failed to get title and content from story: "${result}"'`,
-      500
-    );
-  }
-  return {
-    title: result.substring(0, eol).trim(),
-    content: result.substring(eol + 1),
-  };
+function parseStoryResult (result: string) {
+    result = result.trim();
+    const eol = result.indexOf("\n");
+    if (eol < 0) {
+        throw new ServerError(
+            `Failed to get title and content from story: "${result}"'`,
+            500
+        );
+    }
+    return {
+        title: result.substring(0, eol).trim(),
+        content: result.substring(eol + 1),
+    };
 }
 
 export class StoriesResource extends Resource {
-  @post("/")
-  async postStory(ctx: Context) {
-    const accountId = requestAccountId(ctx);
-    const user = await requestUser(ctx);
+    @post("/")
+    async postStory (ctx: Context) {
+        const accountId = requestAccountId(ctx);
+        const user = await requestUser(ctx);
 
-    const payload = (await ctx.payload).json;
-    const studyLanguage = payload.study_language ?? "Japanese";
-    const topic = payload.topic ?? undefined;
-    const level = payload.level ?? undefined;
-    const style = payload.style ?? undefined;
-    const type = payload.type ?? undefined;
-    const blocking = payload.blocking ?? false;
+        const payload = (await ctx.payload).json;
+        const studyLanguage = payload.study_language ?? "Japanese";
+        const topic = payload.topic ?? undefined;
+        const level = payload.level ?? undefined;
+        const style = payload.style ?? undefined;
+        const type = payload.type ?? undefined;
+        const blocking = payload.blocking ?? false;
 
-    let title, content;
-    if (blocking) {
-      const storyRequest = new StoryGenerator(
-        studyLanguage,
-        topic,
-        level,
-        style,
-        type
-      );
-      const result = await storyRequest.execute();
-      const parsed = parseStoryResult(result);
-      title = parsed.title;
-      content = parsed.content;
-      if (!title || !content) {
-        ctx.throw(500, `Failed to get title and content from story`);
-      }
+        let title, content;
+        if (blocking) {
+            const storyRequest = new GenerateAStory();
+            const req = await storyRequest.execute({
+                data: {
+                    student_name: user.name,
+                    user_language: user.language ?? "english",
+                    study_language: studyLanguage,
+                    topic: topic,
+                    level: level,
+                    style: style,
+                    type: type,
+                    length: 500,
+                }
+            });
+            const parsed = parseStoryResult(req.result);
+            title = parsed.title;
+            content = parsed.content;
+            if (!title || !content) {
+                ctx.throw(500, `Failed to get title and content from story`);
+            }
+        }
+
+        const story = await Story.create({
+            user: user._id,
+            account: accountId,
+            status: blocking ? MessageStatus.active : MessageStatus.created,
+            content: content,
+            title: title,
+            language: studyLanguage,
+            topic: topic,
+            level: level,
+            style: style,
+            type: type,
+        });
+
+        ctx.body = jsonDoc(story);
+        ctx.status = 201;
     }
 
-    const story = await Story.create({
-      user: user._id,
-      account: accountId,
-      status: blocking ? MessageStatus.active : MessageStatus.created,
-      content: content,
-      title: title,
-      language: studyLanguage,
-      topic: topic,
-      level: level,
-      style: style,
-      type: type,
-    });
+    @get("/")
+    async getStories (ctx: Context) {
+        const accountId = requestAccountId(ctx);
+        const user = await requestUser(ctx);
 
-    ctx.body = jsonDoc(story);
-    ctx.status = 201;
-  }
+        const stories = await Story.find({
+            account: accountId,
+            user: user._id,
+        });
+        if (!stories) {
+            ctx.throw(404, `No stories found`);
+        }
 
-  @get("/")
-  async getStories(ctx: Context) {
-    const accountId = requestAccountId(ctx);
-    const user = await requestUser(ctx);
-
-    const stories = await Story.find({
-      account: accountId,
-      user: user._id,
-    });
-    if (!stories) {
-      ctx.throw(404, `No stories found`);
+        ctx.body = jsonDocs(stories);
+        ctx.status = 200;
     }
 
-    ctx.body = jsonDocs(stories);
-    ctx.status = 200;
-  }
+    @get("/options")
+    async getStoryOptions (ctx: Context) {
+        const userId = await requestUser(ctx);
+        const user = await UserModel.findById(userId);
+        if (!user) {
+            ctx.throw(403, `User with id ${userId} not found`);
+        }
+        const studyLanguage = ctx.query.studyLanguage as string;
+        const userLanguage = user.language ?? "en";
 
-  @get("/options")
-  async getStoryOptions(ctx: Context) {
-    const userId = await requestUser(ctx);
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      ctx.throw(403, `User with id ${userId} not found`);
-    }
-    const studyLanguage = ctx.query.studyLanguage as string;
-    const userLanguage = user.language ?? "en";
+        const optionGenerator = new GenerateStoryOptions();
+        const res = await optionGenerator.execute({
+            data: {
+                student_name: user.name,
+                user_language: userLanguage,
+                study_language: studyLanguage,
+            }
+        });
 
-    const optionGenerator = new StoryOptionsGenerator(
-      studyLanguage,
-      userLanguage
-    );
-    const options: StoryOptions = await optionGenerator.execute();
-
-    ctx.body = {
-      type: "StoryOptions",
-      data: options,
-      generated_at: new Date(),
-    };
-  }
-
-  @get("/:storyId")
-  async getStory(ctx: Context) {
-    const story = await Story.findById(ctx.params.storyId);
-    if (!story) {
-      ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
+        ctx.body = {
+            type: "StoryOptions",
+            data: res.result,
+            generated_at: new Date(),
+        };
     }
 
-    ctx.body = jsonDoc(story);
-    ctx.status = 200;
-  }
+    @get("/:storyId")
+    async getStory (ctx: Context) {
+        const story = await Story.findById(ctx.params.storyId);
+        if (!story) {
+            ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
+        }
 
-  @get("/:storyId/stream")
-  async getStoryStream(ctx: Context) {
-    const storyId = ctx.params.storyId;
-    const story = await Story.findById(storyId);
-    if (!story) {
-      ctx.throw(404, `Story with id ${storyId} not found`);
+        ctx.body = jsonDoc(story);
+        ctx.status = 200;
     }
 
-    if (story.status !== MessageStatus.created) {
-      ctx.throw(404, `Message with id ${storyId} must be in created state`);
+
+    @put("/:storyId")
+    async updateStory (ctx: Context) {
+        const story = await Story.findById(ctx.params.storyId);
+        if (!story) {
+            ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
+        }
+        const payload = (await ctx.payload).json;
+
+        story.set(payload);
+        await story.save();
+        ctx.status = 200;
     }
 
-    const session = await SSE.createSession(ctx.req, ctx.res);
-    if (!session.isConnected) {
-      throw new ServerError("SSE session not connected", 500);
+
+    @get("/:storyId/questions")
+    async generateQuestions (ctx: Context) {
+        const user = await requestUser(ctx);
+        const story = await Story.findById(ctx.params.storyId);
+        if (!story) {
+            ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
+        }
+        if (!story.content) {
+            ctx.throw(400, `Story has no content`);
+        }
+
+        const questionsGenerator = new GenerateQuestions();
+        const res = await questionsGenerator.execute({
+            data: {
+                content: story.content,
+                student_name: user.name,
+                user_language: user.language ?? "english",
+                study_language: story.language ?? "english",
+            }
+        });
+
+        ctx.body = {
+            data: res.result.questions as Question[],
+            type: "Questions",
+            generated_at: new Date(),
+        };
+        ctx.status = 200;
     }
 
-    story.status = MessageStatus.pending;
-    await story.save();
+    /**
+     * Verify the answers to the questions
+     * @param ctx
+     */
+    @post("/:storyId/verify_answers")
+    async verifyAnswers (ctx: Context) {
+        const payload = (await ctx.payload).json;
+        const user = await requestUser(ctx);
+        const story = await Story.findById(ctx.params.storyId);
+        if (!story) {
+            ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
+        }
 
-    const storyRequest = new StoryGenerator(
-      story.language,
-      story.topic,
-      story.level,
-      story.style,
-      story.type
-    );
-    const stream = await storyRequest.stream();
-    const chunks = [];
-    for await (const data of stream) {
-      const chunk = data.choices[0]?.delta?.content ?? "";
-      session.push(chunk);
-      chunks.push(chunk);
+
+
+        const answers = payload.data as QuestionAndAnswer[];
+
+        if (!answers || answers.length === 0) {
+            ctx.throw(400, `No answers provided`);
+        }
+        if (!story.content) {
+            ctx.throw(400, `Story has no content`);
+        }
+
+        if (!user.language || !story.language) {
+            ctx.throw(400, `User or story has no language`);
+        }
+
+        const data: AnswerCheckerProps = {
+            student_name: user.name,
+            student_age: 22, //TODO: replace with user.age,
+            interests: [],
+            study_language: story.language,
+            user_language: user.language,
+            story: story.content,
+            answers: answers,
+        };
+
+        const checker = new AnswerChecker();
+        const result = await checker.execute({
+            data: data,
+        });
+        logger.info(`Answer checker result: ${JSON.stringify(result)}`);
+
+        ctx.body = {
+            data: result.result,
+            type: "QACheck",
+            generated_at: new Date(),
+        };
+        ctx.status = 200;
     }
-
-    const result = chunks.join("");
-    const { title, content } = parseStoryResult(result);
-    if (!title || !content) {
-      ctx.throw(500, `Failed to get title and content from story`);
-    }
-
-    story.title = title;
-    story.content = content;
-    story.status = MessageStatus.active;
-    await story.save();
-
-    // send a close event with the crreated document attached
-    session.push(jsonDoc(story), "close");
-
-    ctx.status = 200;
-  }
-
-  @get("/:storyId/questions")
-  async generateQuestions(ctx: Context) {
-    const story = await Story.findById(ctx.params.storyId);
-    if (!story) {
-      ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
-    }
-
-    const questionsGenerator = new QuestionsGenerator(story);
-    const res = await questionsGenerator.execute();
-
-    ctx.body = {
-      data: res.questions as Question[],
-      type: "Questions",
-      generated_at: new Date(),
-    };
-    ctx.status = 200;
-  }
-
-  /**
-   * Verify the answers to the questions
-   * @param ctx
-   */
-  @post("/:storyId/verify_answers")
-  async verifyAnswers(ctx: Context) {
-    const payload = (await ctx.payload).json;
-    const story = await Story.findById(ctx.params.storyId);
-    if (!story) {
-      ctx.throw(404, `Story with id ${ctx.params.storyId} not found`);
-    }
-
-    const answers = payload.data as QuestionAndAnswer[];
-
-    if (!answers || answers.length === 0) {
-      ctx.throw(400, `No answers provided`);
-    }
-
-    const checker = new AnswerChecker(story, answers);
-    const result: QACheck = await checker.execute();
-
-    ctx.body = {
-      data: result,
-      type: "QACheck",
-      generated_at: new Date(),
-    };
-    ctx.status = 200;
-  }
 }

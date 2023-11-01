@@ -1,0 +1,19 @@
+{
+    "name": "@language-tutor/interactions",
+    "main": "./dist/index.js",
+    "source": "./src/index.ts",
+    "types": "./dist/index.d.ts",
+    "type": "module",
+    "scripts": {
+        "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'",
+        "build": "tsc",
+        "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
+        "dev": "tsc -w"
+    },
+    "files": [
+        "dist/**"
+    ],
+    "devDependencies": {
+        "typescript": "^5.0.2"
+    }
+}

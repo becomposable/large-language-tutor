@@ -1,4 +1,4 @@
-
+import { configure } from "@language-tutor/interactions";
 const env = import.meta.env;
 
 const serverUrl = env.VITE_SERVER_URL || "https://lang-tutor-jc6rsiqkva-uc.a.run.app";
@@ -16,9 +16,15 @@ const Env = {
     AUTH_BASE_URL: `${serverUrl}/auth`,
     WEB_DOMAIN: env.VITE_WEB_DOMAIN,
     KUROMOJI_DICT: env.VITE_KUROMOJI_DICT || "/kuromoji/dict/",
-}
+    COMPOSABLE_PROMPTS_API_KEY: env.VITE_COMPOSABLE_PROMPTS_API_KEY,
+};
 
 
 console.log('App Env', Env);
+
+configure({
+    apikey: Env.COMPOSABLE_PROMPTS_API_KEY,
+});
+
 
 export default Env;

@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "Types for language tutor, can be shared client and server side",
     "private": true,
+    "type": "module",
     "scripts": {
         "language-tutor:eslint": "eslint './apps/my-app/src/**/*.{jsx,js,tsx,ts}'",
         "build": "tsc",
@@ -14,7 +15,7 @@
     "types": "./dist/index.d.ts",
     "files": [
         "dist/**"
-      ],
+    ],
     "dependencies": {
         "json-schema": "^0.2.3"
     },
