@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Box, Button, Center, Flex, HStack, Heading, Input, Spacer, Spinner, Stack, Text, VStack } from "@chakra-ui/react";
-import { QACheck, Question, QuestionAndAnswer } from "@language-tutor/types";
+import { GenerateAStory } from "@language-tutor/interactions";
+import { CompletionStatus, QACheck, Question, QuestionAndAnswer, Story } from "@language-tutor/types";
 import { ErrorBoundary } from "@sentry/react";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { MdLightbulbOutline } from "react-icons/md";
 import ErrorAlert from "../../components/ErrorAlert";
 import JpText from "../../components/JpText";
+import SpaceTokenizedText from "../../components/SpaceTokenizedText";
 import StyledIconButton from "../../components/StyledIconButton";
 import DefaultBlinkingCursor from "../../components/ellipsis-anim/DefaultBlinkingCursor";
 import { useUserSession } from "../../context/UserSession";
 import { useFetch } from "../../hooks/useFetch";
-import { IStory, MessageStatus } from "../../types";
 import { ExplainContext } from "../explain/ExplainContextProvider";
-import SpaceTokenizedText from "../../components/SpaceTokenizedText";
 
 
 interface IStreamedContent {
@@ -28,43 +29,55 @@ function parseStoryResult(result: string): IStreamedContent {
     }
 }
 
-function streamStory(url: string,
-    setStreamedContent: (content: IStreamedContent) => void,
-    setStory: (story: IStory) => void) {
-
-    const chunks: string[] = [];
-    const sse = new EventSource(url);
-    sse.addEventListener("message", ev => {
-        const data = JSON.parse(ev.data);
-        if (data) {
-            chunks.push(data);
-            const result = chunks.join('');
-            setStreamedContent(parseStoryResult(result));
-        }
-    });
-    sse.addEventListener("close", (ev) => {
-        sse.close();
-        const story = JSON.parse(ev.data)
-        setStory(story);
-    });
-}
-
 
 interface StoryViewProps {
     storyId: string;
 }
 export default function StoryView({ storyId }: StoryViewProps) {
-    const { client } = useUserSession();
+    const { client, user } = useUserSession();
     const [streamedContent, setStreamedContent] = useState<IStreamedContent>({ title: '', content: '' });
     const [questions, setQuestions] = useState<Question[]>([]);
     const [qaCheck, setQaCheck] = useState<QACheck | undefined>(undefined);
     const [thinking, setThinking] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    const chunks = useMemo(() => [] as string[], []);
 
-    const { data: story, error, setData } = useFetch<IStory>(() => {
-        return client.get(`/stories/${storyId}`).then(story => {
-            if (story.status === MessageStatus.created) {
-                // we must start streaming the story
-                streamStory(client.getUrl(`/stories/${storyId}/stream`), setStreamedContent, setData);
+    const onChunk = (chunk: string) => {
+        chunks.push(chunk);
+        const result = chunks.join('');
+        setStreamedContent(parseStoryResult(result));
+    }
+
+    const { data: story, error } = useFetch<Story>(() => {
+        return client.get(`/stories/${storyId}`).then((story: Story) => {
+            if (story.status === CompletionStatus.created) {
+                setGenerating(true);
+                const storyGen = new GenerateAStory();
+                storyGen.execute({
+                    data: {
+                        user_language: user!.language!,
+                        study_language: story.language!,
+                        length: 200,
+                        student_name: user!.name,
+                        type: story.type!,
+                        topic: story.topic!,
+                        level: story.level!,
+                        style: story.style!
+                    },
+                },
+                    onChunk
+                ).then((run) => {
+                    const { title, content } = parseStoryResult(run.result);
+                    setStreamedContent({ title: title, content: content });
+                    client.put(`/stories/${storyId}`, {
+                        payload: {
+                            content: content,
+                            title: title,
+                            status: CompletionStatus.active
+                    }})
+                }).finally(() => {
+                    setGenerating(false);
+                })
             }
             return story;
         })
@@ -104,7 +117,7 @@ export default function StoryView({ storyId }: StoryViewProps) {
         <Stack w='100%' direction={"row"}>
             <Box w='60%'>
             <ErrorBoundary>
-                <StoryZone story={story} streamedContent={streamedContent} />
+                    <StoryZone story={story} streamedContent={streamedContent} thinking={generating} />
             </ErrorBoundary>
             </Box>
             <Flex w='40%' direction={"column"}>
@@ -235,38 +248,40 @@ function QuestionsToAnswer({ questions, verifyAnswer }: { questions: Question[],
 
 }
 
-function StoryZone({ story, streamedContent }: { story: IStory, streamedContent: IStreamedContent }) {
+function StoryZone({ story, streamedContent, thinking }: { story: Story, streamedContent: IStreamedContent, thinking?: boolean }) {
 
     switch (story.status) {
-        case MessageStatus.created:
+        case CompletionStatus.created:
             return (
                 <StreamedStoryContent title={streamedContent.title}
                     content={streamedContent.content}
-                    language={story.language} />
+                    language={story.language!}
+                    thinking={thinking}
+                />
             )
-        case MessageStatus.pending:
+        case CompletionStatus.pending:
             return <Center pt='10'><Spinner /></Center>
         default: return (
             <StoryContent title={story.title || ''}
                 content={story.content || ''}
-                language={story.language} />
+                language={story.language!} />
         )
     }
 
 }
 
-function StreamedStoryContent({ title, content, language }: StoryContentProps) {
+function StreamedStoryContent({ title, content, language, thinking }: StoryContentProps) {
     console.log('###title:', title);
     return (
         <VStack w='100%' px='4' align='start' justify='start'>
             <Flex justify='space-between' align='start' w='100%' >
                 <Heading size='md' display='flex' alignItems='left'>
-                    <Box>{title} {!content && <DefaultBlinkingCursor />}</Box>
+                    <Box>{title}</Box>
                 </Heading>
                 <Box>Language: <b>{language}</b></Box>
             </Flex>
             <Flex>
-                <Box whiteSpace='pre-line'>{content} {content && <DefaultBlinkingCursor />}</Box>
+                <Box whiteSpace='pre-line'>{content} {thinking && <DefaultBlinkingCursor />}</Box>
             </Flex>
         </VStack >
     )
@@ -277,6 +292,7 @@ interface StoryContentProps {
     title: string;
     content: string;
     language: string;
+    thinking?: boolean;
 }
 function StoryContent({ title, content, language }: StoryContentProps) {
 

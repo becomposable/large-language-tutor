@@ -44,7 +44,7 @@ interface CreateFormProps {
 function CreateForm({ onClose }: CreateFormProps) {
     const [studyLanguage, setStudyLanguage] = useState<string|undefined>(undefined);
     const [style, setStyle] = useState<string>("");
-    const [level, setLevel] = useState<string>("beginner");
+    const [level] = useState<string>("beginner");
     const [topic, setTopic] = useState<string>("");
     const [type, setType] = useState<string>("story");
     const [options, setOptions] = useState<StoryOptions|undefined>(undefined);
@@ -89,7 +89,9 @@ function CreateForm({ onClose }: CreateFormProps) {
                 title: 'Failed to fetch options',
                 description: err.message
             })
-        })
+        }).finally(() => {
+            setLoading(false);
+        }); 
     };
 
     const onSelectLanguage = (language: string) => {

@@ -1,4 +1,5 @@
 
+import { configure } from "@language-tutor/interactions";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -25,7 +26,19 @@ const Env = {
     slack: {
         token: process.env.SLACK_TOKEN,
         defaultChannel: process.env.SLACK_CHANNEL ?? "#notifications-langtutor",
+    },
+    composable: {
+        apiKey: process.env.COMPOSABLE_PROMPT_API_KEY,
     }
+};
+
+if (!Env.composable.apiKey) {
+    throw new Error("COMPOSABLE_PROMPT_API_KEY environment variable must be set");
 }
+
+configure({
+    apikey: Env.composable.apiKey,
+});
+
 
 export default Env;

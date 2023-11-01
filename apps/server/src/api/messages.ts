@@ -1,21 +1,20 @@
-import { Resource, Router, get, post } from "@koa-stack/router";
+import { Resource, Router, ServerError, get, post } from "@koa-stack/router";
+import { VerifyMessage } from "@language-tutor/interactions";
 import SSE from "better-sse";
 import { Context } from "koa";
-import { ServerError } from "@koa-stack/router";
+import logger from "../logger.js";
 import { ConversationModel, IConversation } from "../models/conversation.js";
 import { Explanation } from "../models/explanation.js";
 import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
 import ExplainCompletion from "../openai/ExplainCompletion.js";
 import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
-import VerifyContentCompletion from "../openai/VerifyContent.js";
-import logger from "../logger.js";
 
 
 export class MessagesResource extends Resource {
 
     @post('/')
-    async postMessage(ctx: Context) {
+    async postMessage (ctx: Context) {
 
         const payload = (await ctx.payload).json;
 
@@ -54,7 +53,7 @@ export class MessagesResource extends Resource {
         ctx.status = 201;
     }
 
-    setup(router: Router): void {
+    setup (router: Router): void {
         super.setup(router);
         router.mount('/:messageId', MessageResource);
     }
@@ -63,7 +62,7 @@ export class MessagesResource extends Resource {
 class MessageResource extends Resource {
 
     @get('/stream')
-    async streamMessageCompletion(ctx: Context) {
+    async streamMessageCompletion (ctx: Context) {
         const msgId = ctx.params.messageId;
         const msg = await MessageModel.findById(msgId).populate<{
             conversation: IConversation,
@@ -112,7 +111,7 @@ class MessageResource extends Resource {
      * @param ctx 
      */
     @post('/explain')
-    async explainMessage(ctx: Context) {
+    async explainMessage (ctx: Context) {
         const accountId = requestAccountId(ctx);
         const user = await requestUser(ctx);
 
@@ -156,10 +155,10 @@ class MessageResource extends Resource {
      *  */
 
     @get('/verify')
-    async verifyMessage(ctx: Context) {
+    async verifyMessage (ctx: Context) {
         const user = await requestUser(ctx);
         const msgId = ctx.params.messageId;
-        const msg = await MessageModel.findById(msgId);
+        const msg = await MessageModel.findById(msgId).populate('conversation');
         if (!msg) ctx.throw(404, `Message with id ${msgId} not found`);
         if (!user.language) ctx.throw(400, "User language not set");
 
@@ -170,10 +169,17 @@ class MessageResource extends Resource {
             return;
         }
 
-        const verifyRequest = new VerifyContentCompletion(user.language, msg.content);
-        const result = await verifyRequest.execute();
-        msg.verification = result;
-        logger.info(`Message ${msgId} verified`, result);
+        const verifyRequest = new VerifyMessage();
+        const run = await verifyRequest.execute({
+            data: {
+                content: msg.content,
+                user_language: user.language,
+                study_language: (msg.conversation as IConversation).study_language,
+                student_name: user.name,
+            }
+        });
+        msg.verification = run.result;
+        logger.info(`Message ${msgId} verified`, run.result);
         await msg.save();
 
         ctx.body = msg.verification;
@@ -185,7 +191,7 @@ class MessageResource extends Resource {
      * @param ctx 
      */
     @get('/explain/stream')
-    async streamExplainMessage(ctx: Context) {
+    async streamExplainMessage (ctx: Context) {
         const msgId = ctx.params.messageId;
         let expl = await Explanation.findOne({ message: msgId });
 
@@ -203,10 +209,10 @@ class MessageResource extends Resource {
                 conversation: IConversation,
             }>('conversation');
             if (!message) {
-                ctx.throw(404, 'Message not found')
+                ctx.throw(404, 'Message not found');
             }
             if (!message.content) {
-                ctx.throw(400, 'Message has no content')
+                ctx.throw(400, 'Message has no content');
             }
             const explRequest = new ExplainCompletion(message.conversation.study_language, message.conversation.user_language, message.content, msgId);
             const stream = await explRequest.stream();
@@ -234,7 +240,7 @@ class MessageResource extends Resource {
             }
         }
 
-        session.push(jsonDoc(expl), 'close')
+        session.push(jsonDoc(expl), 'close');
 
         ctx.body = 200;
     }
