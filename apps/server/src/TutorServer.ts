@@ -14,10 +14,6 @@ export default class TutorServer extends KoaServer {
         // this.koa.proxy = Config.net.proxy;
         // this.koa.keys = [Config.auth.sessionSecretKey];
         this.db = new Database();
-        //TODO rename to pathParams
-        Object.defineProperty(this.koa.context, 'params', {
-            get() { return this.$router.params; }
-        });
     }
 
     setup() {

@@ -214,7 +214,8 @@ class MessageResource extends Resource {
             if (!message.content) {
                 ctx.throw(400, 'Message has no content');
             }
-            const explRequest = new ExplainCompletion(message.conversation.study_language, message.conversation.user_language, message.content, msgId);
+            const explRequest = new ExplainCompletion(message.conversation.study_language,
+                message.conversation.user_language, message.content, false, msgId);
             const stream = await explRequest.stream();
             const chunks = [];
             for await (const data of stream) {

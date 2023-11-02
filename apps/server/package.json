@@ -20,10 +20,10 @@
         "typescript": "^5.0.2"
     },
     "dependencies": {
-        "@koa-stack/auth": "^0.7.0",
-        "@koa-stack/auth-firebase": "^0.7.0",
-        "@koa-stack/router": "^0.7.0",
-        "@koa-stack/server": "^0.7.0",
+        "@koa-stack/auth": "^0.10.0",
+        "@koa-stack/auth-firebase": "^0.10.0",
+        "@koa-stack/router": "^0.10.0",
+        "@koa-stack/server": "^0.10.0",
         "@koa/cors": "^4.0.0",
         "@language-tutor/types": "*",
         "@language-tutor/interactions": "*",
