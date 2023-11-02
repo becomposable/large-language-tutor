@@ -136,50 +136,6 @@ class MessageResource extends Resource {
         ctx.status = 200;
     }
 
-    /**
-     * This will return the explanation if an explanation already exists otherwise 
-     * it will create a new empty one and return it. The user will be able to complete 
-     * the explanation by calling the explanation stream endpoint
-     * @param ctx 
-     */
-    @post('/explain')
-    async explainMessage(ctx: Context) {
-        const accountId = requestAccountId(ctx);
-        const user = await requestUser(ctx);
-
-        const msgId = ctx.params.messageId;
-        const msg = await MessageModel.findById(msgId).populate<{
-            conversation: IConversation,
-        }>('conversation');
-
-        if (!msg) {
-            ctx.throw(404, `Message with id ${msgId} not found`);
-        }
-
-        if (msg.status !== MessageStatus.active) {
-            ctx.throw(404, `Message with id ${msgId} must be in active state`);
-        }
-
-        let expl = await Explanation.findOne({ message: msgId });
-
-        if (!expl) {
-            // create the explanation object
-            expl = await Explanation.create({
-                account: accountId,
-                user: user._id,
-                status: MessageStatus.created,
-                topic: msg.content,
-                message: msg.id,
-                content: undefined,
-                study_language: msg.conversation.study_language,
-                user_language: user.language ?? 'en',
-            });
-        }
-
-        ctx.body = jsonDoc(expl);
-        ctx.status = 200;
-    }
-
 
     /**
      * This verifies the message, store the result and return the result
