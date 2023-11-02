@@ -14,7 +14,7 @@ import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 export class MessagesResource extends Resource {
 
     @post('/')
-    async postMessage (ctx: Context) {
+    async postMessage(ctx: Context) {
 
         const payload = (await ctx.payload).json;
 
@@ -53,7 +53,7 @@ export class MessagesResource extends Resource {
         ctx.status = 201;
     }
 
-    setup (router: Router): void {
+    setup(router: Router): void {
         super.setup(router);
         router.mount('/:messageId', MessageResource);
     }
@@ -62,7 +62,7 @@ export class MessagesResource extends Resource {
 class MessageResource extends Resource {
 
     @get('/stream')
-    async streamMessageCompletion (ctx: Context) {
+    async streamMessageCompletion(ctx: Context) {
         const msgId = ctx.params.messageId;
         const msg = await MessageModel.findById(msgId).populate<{
             conversation: IConversation,
@@ -111,7 +111,7 @@ class MessageResource extends Resource {
      * @param ctx 
      */
     @post('/explain')
-    async explainMessage (ctx: Context) {
+    async explainMessage(ctx: Context) {
         const accountId = requestAccountId(ctx);
         const user = await requestUser(ctx);
 
@@ -155,7 +155,7 @@ class MessageResource extends Resource {
      *  */
 
     @get('/verify')
-    async verifyMessage (ctx: Context) {
+    async verifyMessage(ctx: Context) {
         const user = await requestUser(ctx);
         const msgId = ctx.params.messageId;
         const msg = await MessageModel.findById(msgId).populate('conversation');
@@ -191,7 +191,7 @@ class MessageResource extends Resource {
      * @param ctx 
      */
     @get('/explain/stream')
-    async streamExplainMessage (ctx: Context) {
+    async streamExplainMessage(ctx: Context) {
         const msgId = ctx.params.messageId;
         let expl = await Explanation.findOne({ message: msgId });
 
