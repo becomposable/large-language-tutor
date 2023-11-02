@@ -8,7 +8,6 @@ import { ConversationDocument, ConversationModel, IConversation } from "../model
 import { Explanation } from "../models/explanation.js";
 import { MessageDocument, MessageModel, MessageOrigin, MessageStatus, findPreviousMessages } from "../models/message.js";
 import { UserDocument } from "../models/user.js";
-import ExplainCompletion from "../openai/ExplainCompletion.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
 const studyLanguageChat = new StudyLanguageChat();
@@ -217,66 +216,6 @@ class MessageResource extends Resource {
 
         ctx.body = msg.verification;
         ctx.status = 200;
-    }
-
-    /**
-     * @deprecated this endpoint is depreacted and should be removed
-     * @param ctx 
-     */
-    @get('/explain/stream')
-    async streamExplainMessage(ctx: Context) {
-        const msgId = ctx.params.messageId;
-        let expl = await Explanation.findOne({ message: msgId });
-
-        const session = await SSE.createSession(ctx.req, ctx.res);
-        if (!session.isConnected) {
-            throw new ServerError('SSE session not connected', 500);
-        }
-
-        if (expl && expl.content) {
-            // stream the existing content
-            session.push(expl.content);
-        } else { // we need to complete the explanation
-
-            const message = await MessageModel.findById(msgId).populate<{
-                conversation: IConversation,
-            }>('conversation');
-            if (!message) {
-                ctx.throw(404, 'Message not found');
-            }
-            if (!message.content) {
-                ctx.throw(400, 'Message has no content');
-            }
-            const explRequest = new ExplainCompletion(message.conversation.study_language,
-                message.conversation.user_language, message.content, false, msgId);
-            const stream = await explRequest.stream();
-            const chunks = [];
-            for await (const data of stream) {
-                const chunk = data.choices[0]?.delta?.content ?? '';
-                session.push(chunk);
-                chunks.push(chunk);
-            }
-            const content = chunks.join('');
-
-            if (!expl) {
-                // create the explanation object
-                expl = await Explanation.create({
-                    //TODO user and account
-                    topic: message.content,
-                    conversation: message.conversation,
-                    message: message.id,
-                    user: message.conversation.user,
-                    content: content
-                });
-            } else {
-                expl.content = content;
-                await expl.save();
-            }
-        }
-
-        session.push(jsonDoc(expl), 'close');
-
-        ctx.body = 200;
     }
 
 }
