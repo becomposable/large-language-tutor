@@ -5,10 +5,9 @@ import SSE from "better-sse";
 import { Context } from "koa";
 import logger from "../logger.js";
 import { ConversationDocument, ConversationModel, IConversation } from "../models/conversation.js";
-import { Explanation } from "../models/explanation.js";
 import { MessageDocument, MessageModel, MessageOrigin, MessageStatus, findPreviousMessages } from "../models/message.js";
 import { UserDocument } from "../models/user.js";
-import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
+import { jsonDoc, jsonDocs, requestUser } from "./utils.js";
 
 const studyLanguageChat = new StudyLanguageChat();
 
