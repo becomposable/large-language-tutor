@@ -9,10 +9,25 @@ import { Explanation } from "../models/explanation.js";
 import { MessageDocument, MessageModel, MessageOrigin, MessageStatus, findPreviousMessages } from "../models/message.js";
 import { UserDocument } from "../models/user.js";
 import ExplainCompletion from "../openai/ExplainCompletion.js";
-import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
 const studyLanguageChat = new StudyLanguageChat();
+
+async function getChatMessages(conversation: ConversationDocument, limit = 50, lastMessage?: MessageDocument): Promise<ChatPromptSchema[]> {
+    const latestMessages = await findPreviousMessages(conversation._id, {
+        limit: limit, status: MessageStatus.active, last: lastMessage
+    });
+    const messages: ChatPromptSchema[] = [];
+
+    for (let i = latestMessages.length - 1; i >= 0; i--) {
+        const m = latestMessages[i];
+        if (m.origin !== MessageOrigin.system) {
+            messages.push({ role: m.origin as string, content: m.content } as ChatPromptSchema);
+        }
+    }
+
+    return messages;
+}
 
 export class MessagesResource extends Resource {
 
@@ -21,7 +36,7 @@ export class MessagesResource extends Resource {
 
         const payload = (await ctx.payload).json;
 
-        const conversation = await ConversationModel.findById(payload.conversation);
+        const conversation = await ConversationModel.findById(payload.conversation).populate('user', 'name');
         if (!conversation) {
             throw new ServerError(`Conversation with id ${payload.conversation} not found`, 404);
         }
@@ -43,11 +58,15 @@ export class MessagesResource extends Resource {
 
         if (!payload.stream) {
             //not streaming - ask right now for a completion
-            const chatRequest = new ConversationCompletion(conversation);
-            const result = await chatRequest.execute();
-            const content = result.choices[0].message.content || '';
-
-            assistantMessage.content = content;
+            const run = await studyLanguageChat.execute({
+                data: {
+                    student_name: (conversation.user as any).name,
+                    study_language: conversation.study_language,
+                    user_language: conversation.user_language,
+                    chat: await getChatMessages(conversation, 50, assistantMessage),
+                }
+            })
+            assistantMessage.content = run.result as string;
             assistantMessage.status = MessageStatus.active;
             await assistantMessage.save();
         }
@@ -61,23 +80,6 @@ export class MessagesResource extends Resource {
         router.mount('/:messageId', MessageResource);
     }
 }
-
-async function getChatMessages(conversation: ConversationDocument, limit = 50, lastMessage?: MessageDocument): Promise<ChatPromptSchema[]> {
-    const latestMessages = await findPreviousMessages(conversation._id, {
-        limit: limit, status: MessageStatus.active, last: lastMessage
-    });
-    const messages: ChatPromptSchema[] = [];
-
-    for (let i = latestMessages.length - 1; i >= 0; i--) {
-        const m = latestMessages[i];
-        if (m.origin !== MessageOrigin.system) {
-            messages.push({ role: m.origin as string, content: m.content } as ChatPromptSchema);
-        }
-    }
-
-    return messages;
-}
-
 
 class MessageResource extends Resource {
 
@@ -116,7 +118,6 @@ class MessageResource extends Resource {
                     student_name: user.name,
                     study_language: conversation.study_language,
                     user_language: conversation.user_language,
-                    student_age: 10,
                     chat: await getChatMessages(conversation, 50, msg),
                 }
             }, (chunk: string) => {
