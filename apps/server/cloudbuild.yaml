@@ -60,6 +60,7 @@ steps:
       - "--update-secrets=DB_PASSWORD=DB_PASSWORD:latest"
       - "--update-secrets=OPENAI_API_KEY=OPENAI_API_KEY:latest"
       - "--update-secrets=SLACK_TOKEN=SLACK_TOKEN:latest"
+      - "--update-secrets=COMPOSABLE_PROMPTS_API_KEY=COMPOSABLE_PROMPTS_API_KEY:latest"
     id: deploy-app
     waitFor:
       - push-app

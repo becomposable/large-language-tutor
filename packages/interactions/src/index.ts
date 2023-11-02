@@ -1,22 +1,22 @@
 //#export 652d77c65674c387e10594bd @2023-11-01T18:55:45.277Z
 // This is a generated file. Do not edit.
 
-import { StudioClient, InteractionBase } from "@composableai/studio";
+import { InteractionBase, StudioClient } from "@composableai/sdk";
 
 const projectId = '652d77c65674c387e10594bd';
 
 let _client: StudioClient | undefined;
-export function configure(opts: {
+export function configure (opts: {
     serverUrl?: string,
     apikey?: string,
     projectId?: string,
     onRequest?: (url: string, init: RequestInit) => void,
-    onResponse?: (response: Response) => void
+    onResponse?: (response: Response) => void;
 }) {
     return (_client = new StudioClient({ projectId, ...opts }));
 }
 const getClient = () => _client;
-export { getClient, projectId }
+export { getClient, projectId };
 
 /**
  * Define Word input type
@@ -360,7 +360,7 @@ export interface VerifyAndExplainResult {
 export class DefineWord extends InteractionBase<DefineWordProps, DefineWordResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("65429e41cd28fb009c3fd275", client || _client);
+        super("65429e41cd28fb009c3fd275", client || _client);
     }
 }
 
@@ -370,7 +370,7 @@ export class DefineWord extends InteractionBase<DefineWordProps, DefineWordResul
 export class VerifyMessage extends InteractionBase<VerifyMessageProps, VerifyMessageResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("65429c72cd28fb009c3fd1f3", client || _client);
+        super("65429c72cd28fb009c3fd1f3", client || _client);
     }
 }
 
@@ -380,7 +380,7 @@ export class VerifyMessage extends InteractionBase<VerifyMessageProps, VerifyMes
 export class GenerateStoryOptions extends InteractionBase<GenerateStoryOptionsProps, GenerateStoryOptionsResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("65429a26cd28fb009c3fd15b", client || _client);
+        super("65429a26cd28fb009c3fd15b", client || _client);
     }
 }
 
@@ -390,7 +390,7 @@ export class GenerateStoryOptions extends InteractionBase<GenerateStoryOptionsPr
 export class AnswerChecker extends InteractionBase<AnswerCheckerProps, AnswerCheckerResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("653ff24550279bbc4d26d892", client || _client);
+        super("653ff24550279bbc4d26d892", client || _client);
     }
 }
 
@@ -400,7 +400,7 @@ export class AnswerChecker extends InteractionBase<AnswerCheckerProps, AnswerChe
 export class GenerateQuestions extends InteractionBase<GenerateQuestionsProps, GenerateQuestionsResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("6542952ecd28fb009c3fd062", client || _client);
+        super("6542952ecd28fb009c3fd062", client || _client);
     }
 }
 
@@ -410,7 +410,7 @@ export class GenerateQuestions extends InteractionBase<GenerateQuestionsProps, G
 export class StudyLanguageChat extends InteractionBase<StudyLanguageChatProps, any> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("6540c1c250279bbc4d26dbee", client || _client);
+        super("6540c1c250279bbc4d26dbee", client || _client);
     }
 }
 
@@ -420,7 +420,7 @@ export class StudyLanguageChat extends InteractionBase<StudyLanguageChatProps, a
 export class SimpleStoryGen extends InteractionBase<SimpleStoryGenProps, SimpleStoryGenResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("652ff6fbd0344fac4c2c15c7", client || _client);
+        super("652ff6fbd0344fac4c2c15c7", client || _client);
     }
 }
 
@@ -430,7 +430,7 @@ export class SimpleStoryGen extends InteractionBase<SimpleStoryGenProps, SimpleS
 export class UniversalDictionary extends InteractionBase<UniversalDictionaryProps, UniversalDictionaryResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("65314ef978cf8f17f35dfeba", client || _client);
+        super("65314ef978cf8f17f35dfeba", client || _client);
     }
 }
 
@@ -440,7 +440,7 @@ export class UniversalDictionary extends InteractionBase<UniversalDictionaryProp
 export class GenerateAStory extends InteractionBase<GenerateAStoryProps, any> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("652e0dfcda623bded923e678", client || _client);
+        super("652e0dfcda623bded923e678", client || _client);
     }
 }
 
@@ -450,6 +450,6 @@ export class GenerateAStory extends InteractionBase<GenerateAStoryProps, any> {
 export class VerifyAndExplain extends InteractionBase<VerifyAndExplainProps, VerifyAndExplainResult> {
     project = projectId;
     constructor(client?: StudioClient) {
-        super ("652e0cfeda623bded923e5f6", client || _client);
+        super("652e0cfeda623bded923e5f6", client || _client);
     }
 }
