@@ -48,7 +48,7 @@ export default function AnonymousPage() {
           maintenance.
         </Text>
         <Box>
-          <Text py={2}>
+          <Box py={2}>
             To learn more about this project:
             <List listStyleType={"initial"} py={2} px={4}>
               <ListItem>
@@ -70,7 +70,7 @@ export default function AnonymousPage() {
                 </Link>
               </ListItem>
             </List>
-          </Text>
+          </Box>
         </Box>
       </Box>
       <Box maxWidth="md">
