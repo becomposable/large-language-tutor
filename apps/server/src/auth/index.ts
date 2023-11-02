@@ -1,5 +1,5 @@
-import { AuthError, IAuthUser, Principal, authorize } from "@koa-stack/auth";
-import { FirebaseAuth, FirebasePrincipal } from "@koa-stack/auth-firebase";
+import { AuthError, AuthToken, authorize } from "@koa-stack/auth";
+import { FirebaseAuth, FirebaseToken } from "@koa-stack/auth-firebase";
 import { Resource, get, post } from "@koa-stack/router";
 import { Context } from "koa";
 import { jsonDoc, jsonDocs } from "../api/utils.js";
@@ -7,33 +7,67 @@ import { AccountDocument, AccountModel, AccountRoles } from "../models/account.j
 import { UserDocument, UserModel, findUserByEmail } from "../models/user.js";
 import { sendSlackMessage } from "../services/slack-notifier.js";
 
-export class AuthUser implements IAuthUser {
-    constructor(public doc: UserDocument) {
+async function createUser(authToken: FirebaseToken<UserPrincipal>) {
+    const token = authToken.token;
+    if (!token.email) AuthError.notAuthorized();
+    const user = await UserModel.create({
+        externalId: token.uid,
+        email: token.email,
+        name: token.name || token.email,
+        phone: token.phone_number,
+        picture: token.picture,
+        sign_in_provider: token.firebase.sign_in_provider,
+    });
+
+    await AccountModel.create({
+        name: user.name,
+        owner: user._id,
+        members: [{
+            user: user._id,
+            role: AccountRoles.admin
+        }]
+    })
+
+    sendSlackMessage(`New user created: ${user.name} (${user.email})`);
+
+    return new UserPrincipal(authToken, user);
+}
+
+export class UserPrincipal {
+    constructor(public auth: AuthToken, public user: UserDocument) {
+    }
+
+    get module() {
+        return this.auth.module;
+    }
+
+    get type() {
+        return this.auth.type;
     }
 
     get id(): string {
-        return this.doc.id;
+        return this.user.id;
     }
 
     async toJsonObject() {
 
-        const accounts = await AccountModel.find({ 'members.user': this.doc._id });
+        const accounts = await AccountModel.find({ 'members.user': this.user._id });
 
         let selectedAccount: AccountDocument | null = null;
 
-        if (this.doc.last_selected_account) {
+        if (this.user.last_selected_account) {
             selectedAccount = await AccountModel.findOne({
-                _id: this.doc.last_selected_account,
-                'members.user': this.doc._id
+                _id: this.user.last_selected_account,
+                'members.user': this.user._id
             })
         }
 
         if (!selectedAccount) {
-            selectedAccount = await AccountModel.findOne({ owner: this.doc._id })
+            selectedAccount = await AccountModel.findOne({ owner: this.user._id })
         }
 
         return {
-            user: jsonDoc(this.doc),
+            user: jsonDoc(this.user),
             accounts: jsonDocs(accounts),
             selected_account: selectedAccount ? jsonDoc(selectedAccount) : null
         }
@@ -42,8 +76,8 @@ export class AuthUser implements IAuthUser {
 
 
 new FirebaseAuth({
-    getUser: async (principal: FirebasePrincipal<AuthUser>) => {
-        const token = principal.token;
+    getPrincipal: async (authToken: FirebaseToken<UserPrincipal>) => {
+        const token = authToken.token;
         if (!token.email) {
             return null;
         }
@@ -52,34 +86,9 @@ new FirebaseAuth({
             return null;
         }
 
-        return new AuthUser(user);
+        return new UserPrincipal(authToken, user);
     },
 
-    createUser: async (principal: FirebasePrincipal<AuthUser>) => {
-        const token = principal.token;
-        if (!token.email) AuthError.notAuthorized();
-        const user = await UserModel.create({
-            externalId: token.uid,
-            email: token.email,
-            name: token.name || token.email,
-            phone: token.phone_number,
-            picture: token.picture,
-            sign_in_provider: token.firebase.sign_in_provider,
-        });
-
-        await AccountModel.create({
-            name: user.name,
-            owner: user._id,
-            members: [{
-                user: user._id,
-                role: AccountRoles.admin
-            }]
-        })
-
-        sendSlackMessage(`New user created: ${user.name} (${user.email})`);
-
-        return new AuthUser(user);
-    }
 }).register();
 
 
@@ -87,21 +96,27 @@ export class AuthResource extends Resource {
 
     @post("/link")
     async linkUser(ctx: Context) {
-        const principal = await authorize(ctx) as Principal<AuthUser>;
-        const user = await principal.getOrCreateUser();
-        ctx.body = await user.toJsonObject();
+        const token = await authorize(ctx) as AuthToken<UserPrincipal>;
+        let principal = await token.getPrincipal();
+        if (!principal) {
+            if (token.type === 'firebase') {
+                principal = await createUser(token as FirebaseToken<UserPrincipal>);
+            } else {
+                ctx.throw(401, "User cannot be created");
+            }
+        }
+        return await principal.toJsonObject();
     }
 
     @get("/me")
     async getMe(ctx: Context) {
-        const principal = await authorize(ctx) as Principal<AuthUser>;
-        const user = await principal.getUser();
-        if (!user) {
+        const token = await authorize(ctx) as AuthToken<UserPrincipal>;
+        const principal = await token.getPrincipal();
+        if (!principal) {
             ctx.throw(404, "User not found");
         }
-        ctx.body = await user.toJsonObject();
+        ctx.body = await principal.toJsonObject();
     }
-
 
 }
 

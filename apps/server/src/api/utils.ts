@@ -1,9 +1,8 @@
+import { AuthError } from "@koa-stack/auth";
 import { Context } from "koa";
 import { Document } from "mongoose";
-import { Principal } from "@koa-stack/auth";
+import { UserPrincipal } from "../auth/index.js";
 import Env from "../env.js";
-import { AuthUser } from "../auth/index.js";
-import { AuthError } from "@koa-stack/auth";
 
 export function tryRequestAccountId(ctx: Context) {
     //return (ctx.header[OrgHeader] || ctx.query.org) as string;
@@ -17,23 +16,23 @@ export function requestAccountId(ctx: Context) {
 }
 
 export function tryRequestPrincipal(ctx: Context) {
-    return ctx.state.principal as Principal<AuthUser> || null;
+    return ctx.auth ? ctx.auth.getPrincipal() : Promise.resolve(null);
 }
 
-export function requestPrincipal(ctx: Context) {
-    const principal = tryRequestPrincipal(ctx);
-    if (!principal) {
-        throw AuthError.notAuthorized();
+export async function requestPrincipal(ctx: Context): Promise<UserPrincipal> {
+    if (ctx.auth) {
+        const principal = await ctx.auth.getPrincipal();
+        if (!principal) {
+            throw new AuthError("No matching user was found", 401);
+        }
+        return principal;
     }
-    return principal;
+    throw AuthError.notAuthorized();
 }
 
 export async function requestUser(ctx: Context) {
-    const user = await requestPrincipal(ctx).getUser();
-    if (!user) {
-        throw AuthError.noMatchingUserFound();
-    }
-    return user.doc;
+    const principal = await requestPrincipal(ctx);
+    return principal.user;
 }
 
 export function jsonDoc(doc: Document, virtuals?: boolean) {
