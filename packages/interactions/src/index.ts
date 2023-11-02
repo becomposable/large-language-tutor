@@ -1,4 +1,4 @@
-//#export 652d77c65674c387e10594bd @2023-11-02T14:55:47.857Z
+//#export 652d77c65674c387e10594bd @2023-11-02T15:33:47.608Z
 // This is a generated file. Do not edit.
 
 import { StudioClient, InteractionBase } from "@composableai/sdk";
@@ -27,6 +27,7 @@ export interface VerifyAndExplainProps {
     interests?: string[];
     study_language: string;
     user_language: string;
+    verifyOnly: boolean;
     content: string;
 }
 

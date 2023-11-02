@@ -1,12 +1,13 @@
-import { Resource, get, post } from "@koa-stack/router";
+import { Resource, ServerError, get, post } from "@koa-stack/router";
+import { VerifyAndExplain } from "@language-tutor/interactions";
 import SSE from "better-sse";
 import { Context } from "koa";
-import { ServerError } from "@koa-stack/router";
+import logger from "../logger.js";
 import { Explanation } from "../models/explanation.js";
 import { MessageModel, MessageStatus } from "../models/message.js";
-import ExplainCompletion from "../openai/ExplainCompletion.js";
 import { jsonDoc, requestAccountId, requestUser } from "./utils.js";
 
+const verifyAndExplain = new VerifyAndExplain();
 
 export class ExplainResource extends Resource {
 
@@ -14,7 +15,7 @@ export class ExplainResource extends Resource {
     @get('/:explanationId/stream')
     async streamMessageCompletion(ctx: Context) {
         const explanationId = ctx.params.explanationId;
-        const expl = await Explanation.findById(explanationId);
+        const expl = await Explanation.findById(explanationId).populate('user', 'name');
 
         if (!expl) {
             ctx.throw(404, `Explanation with id ${explanationId} not found`);
@@ -29,24 +30,33 @@ export class ExplainResource extends Resource {
             throw new ServerError('SSE session not connected', 500);
         }
 
-        expl.status = MessageStatus.pending;
-        await expl.save();
+        try {
+            expl.status = MessageStatus.pending;
+            await expl.save();
 
-        const explRequest = new ExplainCompletion(expl.study_language, expl.user_language, expl.topic, expl.verifyOnly, expl.message?.toString());
-        const stream = await explRequest.stream();
-        const chunks = [];
-        for await (const data of stream) {
-            const chunk = data.choices[0]?.delta?.content ?? '';
-            session.push(chunk);
-            chunks.push(chunk);
+            const run = await verifyAndExplain.execute({
+                data: {
+                    student_name: (expl.user as any).name,
+                    study_language: expl.study_language,
+                    user_language: expl.user_language,
+                    verifyOnly: expl.verifyOnly,
+                    content: expl.topic,
+                }
+            }, (chunk: string) => {
+                session.push(chunk);
+            });
+
+            expl.content = run.result;
+            expl.status = MessageStatus.active;
+            await expl.save();
+
+            // send a close event with the crreated document attached
+            session.push(jsonDoc(expl), "close");
+
+        } catch (err: any) {
+            logger.error("Error while streaming message", err);
+            session.push({ error: err.message || 'Error while streaming message' }, "close");
         }
-
-        expl.content = chunks.join('');
-        expl.status = MessageStatus.active;
-        await expl.save();
-
-        // send a close event with the crreated document attached
-        session.push(jsonDoc(expl), "close");
 
         ctx.status = 200;
     }
@@ -97,9 +107,16 @@ export class ExplainResource extends Resource {
 
         let content: string | undefined = undefined;
         if (blocking) {
-            const explainRequest = new ExplainCompletion(studyLanguage, user.language, topic, verifyOnly, messageId);
-            const result = await explainRequest.execute();
-            content = result;
+            const run = await verifyAndExplain.execute({
+                data: {
+                    student_name: user.name,
+                    study_language: studyLanguage,
+                    user_language: user.language,
+                    verifyOnly: verifyOnly,
+                    content: topic,
+                }
+            });
+            content = run.result;
         }
 
         const explanation = await Explanation.create({
