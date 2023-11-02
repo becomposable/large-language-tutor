@@ -1,20 +1,23 @@
+import { ChatPromptSchema } from "@composableai/sdk";
 import { Resource, Router, ServerError, get, post } from "@koa-stack/router";
-import { VerifyMessage } from "@language-tutor/interactions";
+import { StudyLanguageChat, VerifyMessage } from "@language-tutor/interactions";
 import SSE from "better-sse";
 import { Context } from "koa";
 import logger from "../logger.js";
-import { ConversationModel, IConversation } from "../models/conversation.js";
+import { ConversationDocument, ConversationModel, IConversation } from "../models/conversation.js";
 import { Explanation } from "../models/explanation.js";
-import { MessageModel, MessageOrigin, MessageStatus } from "../models/message.js";
+import { MessageDocument, MessageModel, MessageOrigin, MessageStatus, findPreviousMessages } from "../models/message.js";
+import { UserDocument } from "../models/user.js";
 import ExplainCompletion from "../openai/ExplainCompletion.js";
 import { ConversationCompletion } from "../openai/index.js";
 import { jsonDoc, jsonDocs, requestAccountId, requestUser } from "./utils.js";
 
+const studyLanguageChat = new StudyLanguageChat();
 
 export class MessagesResource extends Resource {
 
     @post('/')
-    async postMessage (ctx: Context) {
+    async postMessage(ctx: Context) {
 
         const payload = (await ctx.payload).json;
 
@@ -53,20 +56,40 @@ export class MessagesResource extends Resource {
         ctx.status = 201;
     }
 
-    setup (router: Router): void {
+    setup(router: Router): void {
         super.setup(router);
         router.mount('/:messageId', MessageResource);
     }
 }
 
+async function getChatMessages(conversation: ConversationDocument, limit = 50, lastMessage?: MessageDocument): Promise<ChatPromptSchema[]> {
+    const latestMessages = await findPreviousMessages(conversation._id, {
+        limit: limit, status: MessageStatus.active, last: lastMessage
+    });
+    const messages: ChatPromptSchema[] = [];
+
+    for (let i = latestMessages.length - 1; i >= 0; i--) {
+        const m = latestMessages[i];
+        if (m.origin !== MessageOrigin.system) {
+            messages.push({ role: m.origin as string, content: m.content } as ChatPromptSchema);
+        }
+    }
+
+    return messages;
+}
+
+
 class MessageResource extends Resource {
 
     @get('/stream')
-    async streamMessageCompletion (ctx: Context) {
+    async streamMessageCompletion(ctx: Context) {
         const msgId = ctx.params.messageId;
-        const msg = await MessageModel.findById(msgId).populate<{
-            conversation: IConversation,
-        }>('conversation');
+        const msg = await MessageModel.findById(msgId).populate({
+            path: 'conversation',
+            populate: {
+                path: 'user',
+            }
+        });
 
         if (!msg) {
             ctx.throw(404, `Message with id ${msgId} not found`);
@@ -84,22 +107,31 @@ class MessageResource extends Resource {
         msg.status = MessageStatus.pending;
         await msg.save();
 
-        const chatRequest = new ConversationCompletion(msg.conversation, 50).beforeMessage(msg);
-        // TODO we mau need to pass a lasyt message
-        const stream = await chatRequest.stream();
-        const chunks = [];
-        for await (const data of stream) {
-            const chunk = data.choices[0]?.delta?.content ?? '';
-            session.push(chunk);
-            chunks.push(chunk);
+        const conversation = msg.conversation as ConversationDocument;
+        const user = conversation.user as unknown as UserDocument;
+
+        try {
+            const run = await studyLanguageChat.execute({
+                data: {
+                    student_name: user.name,
+                    study_language: conversation.study_language,
+                    user_language: conversation.user_language,
+                    student_age: 10,
+                    chat: await getChatMessages(conversation, 50, msg),
+                }
+            }, (chunk: string) => {
+                session.push(chunk);
+            });
+
+            msg.content = run.result;
+            msg.status = MessageStatus.active;
+            await msg.save();
+
+            session.push(jsonDoc(msg), "close");
+        } catch (err: any) {
+            logger.error("Error while streaming message", err);
+            session.push({ error: err.message || 'Error while streaming message' }, "close");
         }
-
-        msg.content = chunks.join('');
-        msg.status = MessageStatus.active;
-        await msg.save();
-
-        // send a close event with the crreated document attached
-        session.push(jsonDoc(msg), "close");
 
         ctx.status = 200;
     }
@@ -111,7 +143,7 @@ class MessageResource extends Resource {
      * @param ctx 
      */
     @post('/explain')
-    async explainMessage (ctx: Context) {
+    async explainMessage(ctx: Context) {
         const accountId = requestAccountId(ctx);
         const user = await requestUser(ctx);
 
@@ -155,7 +187,7 @@ class MessageResource extends Resource {
      *  */
 
     @get('/verify')
-    async verifyMessage (ctx: Context) {
+    async verifyMessage(ctx: Context) {
         const user = await requestUser(ctx);
         const msgId = ctx.params.messageId;
         const msg = await MessageModel.findById(msgId).populate('conversation');
@@ -191,7 +223,7 @@ class MessageResource extends Resource {
      * @param ctx 
      */
     @get('/explain/stream')
-    async streamExplainMessage (ctx: Context) {
+    async streamExplainMessage(ctx: Context) {
         const msgId = ctx.params.messageId;
         let expl = await Explanation.findOne({ message: msgId });
 

@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "composite": true,
     "rootDir": "./src",
     "sourceMap": true,
     "outDir": "./lib",
@@ -39,5 +40,10 @@
     "@/*": [
       "src/*"
     ]
-  }
+  },
+  "references": [
+    {
+      "path": "../../packages/interactions/tsconfig.json"
+    }
+  ]
 }
