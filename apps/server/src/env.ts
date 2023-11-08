@@ -28,12 +28,12 @@ const Env = {
         defaultChannel: process.env.SLACK_CHANNEL ?? "#notifications-langtutor",
     },
     composable: {
-        apiKey: process.env.COMPOSABLE_PROMPT_API_KEY,
+        apiKey: process.env.COMPOSABLE_PROMPTS_API_KEY,
     }
 };
 
 if (!Env.composable.apiKey) {
-    throw new Error("COMPOSABLE_PROMPT_API_KEY environment variable must be set");
+    throw new Error("COMPOSABLE_PROMPTS_API_KEY environment variable must be set");
 }
 
 configure({
